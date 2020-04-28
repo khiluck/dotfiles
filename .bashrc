@@ -58,3 +58,11 @@ pass()
 	[ $# -eq 0 ] && { echo $(< /dev/urandom tr -dc a-zA-Z0-9 | head -c12); return 0; } | xclip -r -l 1
 }
 
+
+# rdp connection
+rdp()
+{
+	# first parameter - server, second - username@domain, third - password
+	xfreerdp /u:$2 /p:$3 /v:$1 /f /sound:sys:pulse /network:auto /fonts /cert-tofu +auto-reconnect +heartbeat +aero -z
+
+}
