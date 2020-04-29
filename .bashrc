@@ -4,6 +4,7 @@
 # default editor
 export EDITOR=vim
 
+
 # set aliases
 alias sudo='sudo '
 alias vi='vim'
@@ -66,3 +67,8 @@ rdp()
 	xfreerdp /u:$2 /p:$3 /v:$1 /f /sound:sys:pulse /network:auto /fonts /cert-tofu +auto-reconnect +heartbeat +aero -z
 
 }
+
+
+# fix remote ssh connections
+alias ssh='TERM=xterm ssh'
+
