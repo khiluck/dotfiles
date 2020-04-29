@@ -5,8 +5,10 @@ static const unsigned int borderpx  = 0;        /* border pixel of windows */
 static const unsigned int snap      = 0;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "monospace:size=15" };
-static const char dmenufont[]       = "monospace:size=15";
+/*static const char *fonts[]          = { "monospace:size=15" };
+static const char dmenufont[]       = "monospace:size=15";*/
+static const char *fonts[]          = { "Terminus (TTF):pixelsize=20:antialias=true:autohint=true" };
+static const char dmenufont[]       = "Terminus (TTF):pixelsize=20:antialias=true:autohint=true";
 static const char color_fg[] = "#839496";
 static const char color_fg_selected[] = "#268bd2";
 static const char color_bg[] = "#001E28";
