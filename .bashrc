@@ -1,12 +1,6 @@
 # if not running interactively, do not do anything
 [[ $- == *i* ]] || return
 
-# default editor
-export EDITOR=vim
-
-# Add script folder to PATH variable
-export PATH=$PATH:~/scripts
-
 # set aliases
 alias sudo='sudo '
 alias vi='vim'
