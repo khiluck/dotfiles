@@ -4,6 +4,8 @@
 # default editor
 export EDITOR=vim
 
+# Add script folder to PATH variable
+export PATH=$PATH:~/scripts
 
 # set aliases
 alias sudo='sudo '
@@ -70,5 +72,5 @@ rdp()
 
 
 # fix remote ssh connections
-alias ssh='TERM=xterm ssh'
+alias ssh='TERM=xterm ssh -lroot'
 

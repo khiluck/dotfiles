@@ -52,6 +52,7 @@ static const Layout layouts[] = {
 #define XF86AudioLowerVolume		0x1008ff11
 #define XF86AudioRaiseVolume		0x1008ff13
 #define MODKEY Mod1Mask
+#define WINKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -72,6 +73,8 @@ static const char *cmdsounddown[]  = { "amixer", "-q", "sset", "Master", "5%-", 
 static const char *cmdsoundtoggle[]  = { "amixer", "-q", "sset", "Master", "toggle", NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
+	{ WINKEY,                       XK_b,      spawn,          SHCMD("firefox") },
+	{ WINKEY|ShiftMask,             XK_s,      spawn,          SHCMD("screenshot.sh") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
