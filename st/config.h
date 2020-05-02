@@ -6,7 +6,7 @@
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
 /* static char *font = "Liberation Mono:pixelsize=20:antialias=true:autohint=true"; */
-char font[] = "Ubuntu Mono:pixelsize=20";
+char font[] = "Ubuntu Mono:pixelsize=14";
 int borderpx = 0;
 
 /*
