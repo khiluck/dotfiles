@@ -18,6 +18,9 @@ xset s off
 [ -f ~/Pictures/desktop ] && feh --bg-scale ~/Pictures/desktop
 
 
+# set brightness level to 50%
+echo "127" > /sys/class/backlight/amdgpu_bl0/brightness
+
 xrandr --output eDP --set TearFree on
 
 exec dwm
