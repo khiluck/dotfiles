@@ -1,6 +1,13 @@
 # if not running interactively, do not do anything
 [[ $- == *i* ]] || return
 
+# Set PATH
+if test -d "$HOME/scripts"
+then
+	PATH="$HOME/scripts:$PATH"
+fi
+
+
 # set aliases
 alias sudo='sudo '
 alias vi='vim'
