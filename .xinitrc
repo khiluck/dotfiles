@@ -5,10 +5,8 @@ xset -b
 xset r rate 200 20
 
 # toggle keyboard layouts
-setxkbmap us,ru,ua -option "grp:win_space_toggle"
-
+setxkbmap -model thinkpad -layout us,ru,ua -option "grp:win_space_toggle"
 #setxkbmap -model thinkpad -layout us -option caps:escape
-setxkbmap -model thinkpad -layout us
 xset m 5 1
 
 # turn off display energy save mode
