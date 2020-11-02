@@ -5,7 +5,8 @@ xset -b
 xset r rate 200 20
 
 # toggle keyboard layouts
-setxkbmap -model thinkpad -layout us,ru,ua -option "grp:win_space_toggle"
+setxkbmap -model thinkpad -layout us,ru -option "grp:win_space_toggle"
+#setxkbmap -model thinkpad -layout us,ru,ua -option "grp:win_space_toggle"
 #setxkbmap -model thinkpad -layout us -option caps:escape
 xset m 5 1
 
