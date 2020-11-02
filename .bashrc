@@ -50,9 +50,9 @@ clrreset='\e[0m'
 clrwhite='\e[1;37m'
 clrgreen='\e[1;32m'
 clrred='\e[1;31m'
-export PS1="\[$clrwhite\]\w \`if [ \$? = 0 ]; then echo -e '\[$clrgreen\]'; else echo -e '\[$clrred\]'; fi\`\\$ \[$clrreset\]"
-
-
+clrcyan='\e[1;36m'
+clrpurple='\e[1;35m'
+PS1="\[$clrcyan\]\u\[$clrwhite\]@\[$clrpurple\]\w\`if [ \$? = 0 ]; then echo -e '\[$clrgreen\]'; else echo -e '\[$clrred\]'; fi\`\\$ \[$clrreset\]"
 
 
 # generate password
