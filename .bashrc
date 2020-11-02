@@ -14,7 +14,8 @@ alias vi='vim'
 # fix remote ssh connections
 alias ssh='TERM=xterm ssh -lroot'
 
-alias c='~/connect.sh'
+alias c='~/secret/connect.sh'
+alias r='~/secret/rdpconnect.sh'
 
 # add color output
 alias ls='ls --color=auto -l --time-style long-iso'
@@ -71,7 +72,7 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	xfreerdp /u:$2 /p:$3 /v:$1 /f /sound:sys:pulse /network:auto /fonts /cert-tofu -sec-nla +auto-reconnect +heartbeat +aero -z
+	xfreerdp /u:$2 /p:$3 /v:$1 /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z
 
 }
 
