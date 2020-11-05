@@ -72,10 +72,13 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	xfreerdp /u:$2 /p:$3 /v:$1 /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z
+	xfreerdp /u:$2 /p:$3 /v:$1 /f /smart-sizing:1366x768 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z
 
 }
 
+# youtube music download
+dl(){
+	 youtube-dl -f bestaudio $1
 
-
+}
 

@@ -18,6 +18,9 @@ xrandr --output eDP --set TearFree on
 
 ~/scripts/dwm_status &
 
+# add transparency
+xcompmgr &
+
 # set wallpaper
 [ -f ~/Pictures/desktop.jpg ] && feh --bg-scale ~/Pictures/desktop.jpg
 
