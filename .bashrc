@@ -9,6 +9,10 @@ fi
 
 
 # set aliases
+
+# alias mount office share
+alias share='sudo mount -t cifs -o username=guest,password=guest,uid=1000 //192.168.0.100/share /mnt/share/'
+
 alias sudo='sudo '
 alias vi='vim'
 # fix remote ssh connections
@@ -82,3 +86,7 @@ dl(){
 
 }
 
+# copy using rsync
+rcp(){
+	rsync --info=progress2 $1 $2
+}

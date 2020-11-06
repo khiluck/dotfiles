@@ -21,6 +21,7 @@ xrandr --output eDP --set TearFree on
 # add transparency
 xcompmgr &
 
+
 # set wallpaper
 [ -f ~/Pictures/desktop.jpg ] && feh --bg-scale ~/Pictures/desktop.jpg
 

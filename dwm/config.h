@@ -1,7 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 1;        /* border pixel of windows */
+static const unsigned int borderpx  = 3;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
@@ -74,7 +74,7 @@ static const char *cmdsoundtoggle[]  = { "amixer", "-q", "sset", "Master", "togg
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("firefox") },
-	{ WINKEY|ShiftMask,             XK_s,      spawn,          SHCMD("screenshot.sh") },
+	{ WINKEY,	                XK_s,      spawn,          SHCMD("screenshot") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
