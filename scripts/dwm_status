@@ -41,10 +41,10 @@ print_network(){
 }
 
 print_temp(){
-	test -f /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon3/temp1_input || return 0
+	test -f /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input || return 0
 #	test -f /sys/class/thermal/thermal_zone0/temp || return 0
 #	echo $(head -c 2 /sys/class/thermal/thermal_zone0/temp)C
-	echo $(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon3/temp1_input)℃
+	echo $(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input)℃
 }
 
 print_bat(){
@@ -65,7 +65,7 @@ print_bat(){
 
 print_date(){
 #	echo $(date "+%a %m-%d %T%:::z") $(TZ=CET date "+ %H%:::z")
-	echo $(date "+%d-%m ⌚%T")
+	echo $(date "+%d-%b ⌚%T")
 }
 
 print_record(){
@@ -79,7 +79,7 @@ print_record(){
 while true
 do
 #	xsetroot -name "$(print_mem) $(print_network) $(print_temp) $(print_wifi) $(print_bat) $(print_record) $(print_date)"
-	xsetroot -name " ⌨ $(print_layout)  $(print_temp)  "⚡"$(print_bat)  $(print_date)"
+	xsetroot -name " ⌨ $(print_layout)  $(print_temp)  "⚡"$(print_bat)%  $(print_date)"
 	sleep 1
 done
 

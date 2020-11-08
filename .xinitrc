@@ -25,5 +25,7 @@ xcompmgr &
 # set wallpaper
 [ -f ~/Pictures/desktop.jpg ] && feh --bg-scale ~/Pictures/desktop.jpg
 
+# check logitech mouse on startup, if connected - disable touchpad
+[[ -n $(lsusb | grep -i "unifying receiver") ]] && synclient TouchpadOff=1
 
 exec dwm
