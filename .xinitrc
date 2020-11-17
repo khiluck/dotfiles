@@ -1,3 +1,5 @@
+xrandr --auto
+
 # turn off beep
 xset -b
 
@@ -11,7 +13,7 @@ setxkbmap -model thinkpad -layout us,ru -option "grp:win_space_toggle"
 xset m 5 1
 
 # turn off display energy save mode
-xset -dpms
+#xset -dpms
 xset s off
 
 xrandr --output eDP --set TearFree on
@@ -21,11 +23,18 @@ xrandr --output eDP --set TearFree on
 # add transparency
 xcompmgr &
 
+# set default brightness
+echo "70" | sudo tee /sys/class/backlight/amdgpu_bl0/brightness
 
 # set wallpaper
 [ -f ~/Pictures/desktop.jpg ] && feh --bg-scale ~/Pictures/desktop.jpg
 
 # check logitech mouse on startup, if connected - disable touchpad
-[[ -n $(lsusb | grep -i "unifying receiver") ]] && synclient TouchpadOff=1 || synclient TouchpadOff=0
+#[ -n $(lsusb | grep -i "unifying receiver") ]] && synclient TouchpadOff=1 || synclient TouchpadOff=0
+
+
+#autolock
+xss-lock -- /usr/local/bin/slock &
+
 
 exec dwm

@@ -71,6 +71,7 @@ static const char *cmdbrightnessdown[]  = { "sudo", "brightness", "down", NULL }
 static const char *cmdsoundup[]  = { "amixer", "-q", "sset", "Master", "5%+", NULL };
 static const char *cmdsounddown[]  = { "amixer", "-q", "sset", "Master", "5%-", NULL };
 static const char *cmdsoundtoggle[]  = { "amixer", "-q", "sset", "Master", "toggle", NULL };
+static const char *cmdlock[]  = { "slock", NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("firefox") },
@@ -78,6 +79,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
+	{ MODKEY,                       XK_F12,    spawn,           {.v = cmdlock } },
 	{ 0,                            XF86MonBrightnessDown,     spawn,         {.v = cmdbrightnessdown } },
 	{ 0,                            XF86MonBrightnessUp,       spawn,         {.v = cmdbrightnessup } },
 	{ 0,                            XF86AudioMute,             spawn,          {.v = cmdsoundtoggle } },
