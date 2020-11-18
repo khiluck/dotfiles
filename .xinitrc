@@ -16,7 +16,10 @@ xset m 5 1
 #xset -dpms
 xset s off
 
-xrandr --output eDP --set TearFree on
+#xrandr --output eDP --set TearFree on
+~/scripts/extmon
+
+
 
 ~/scripts/dwm_status &
 
