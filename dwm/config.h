@@ -79,7 +79,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
-	{ MODKEY,                       XK_F12,    spawn,           {.v = cmdlock } },
+	{ WINKEY,                       XK_l,      spawn,          {.v = cmdlock } },
 	{ 0,                            XF86MonBrightnessDown,     spawn,         {.v = cmdbrightnessdown } },
 	{ 0,                            XF86MonBrightnessUp,       spawn,         {.v = cmdbrightnessup } },
 	{ 0,                            XF86AudioMute,             spawn,          {.v = cmdsoundtoggle } },
