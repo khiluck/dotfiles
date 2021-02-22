@@ -24,4 +24,4 @@ clear
 # If PORT variable is not empty, connect using -p option
 [[ -z $PORT ]] || { echo "Connecting to IP: [$IP]; Port: [$PORT]"; $(which ssh) -lroot $IP -p $PORT; exit; }
 echo "Connecting to IP: [$IP];"
-$(which ssh) -lroot $IP
+$(which ssh) -X -lroot $IP

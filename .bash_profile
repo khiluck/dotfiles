@@ -14,9 +14,9 @@ export PATH=$PATH:~/scripts
 export TERMINAL="st"
 
 # default browser
-export BROWSER="firefox"
+export BROWSER="chromium"
 
-
+sleep 1
 # start dwm
 if [[ "$(tty)" = "/dev/tty1" ]]; then
 	pgrep dwm || startx

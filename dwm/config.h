@@ -74,7 +74,7 @@ static const char *cmdsoundtoggle[]  = { "amixer", "-q", "sset", "Master", "togg
 static const char *cmdlock[]  = { "slock", NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ WINKEY,                       XK_b,      spawn,          SHCMD("firefox") },
+	{ WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
 	{ WINKEY,	                XK_s,      spawn,          SHCMD("screenshot") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
