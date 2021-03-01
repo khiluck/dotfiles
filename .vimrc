@@ -58,7 +58,7 @@ nnoremap <C-P> :bprev<CR>
 " Выключаем звук в Vim
 set visualbell t_vb=
  
-set guifont=Monaco:h18
+"set guifont=Monaco:h18
  
 " Disable autoindent for paste from buffer
 set paste
