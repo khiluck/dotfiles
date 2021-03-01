@@ -28,8 +28,8 @@ autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,
 syntax on "Включить подсветку синтаксиса
  
 " set nu "Включаем нумерацию строк
-set mousehide "Спрятать курсор мыши когда набираем текст
-set mouse=a "Включить поддержку мыши
+"set mousehide "Спрятать курсор мыши когда набираем текст
+"set mouse=a "Включить поддержку мыши
 set termencoding=utf-8 "Кодировка терминала
 set novisualbell "Не мигать 
 set t_vb= "Не пищать! (Опции 'не портить текст', к сожалению, нету)
@@ -58,7 +58,7 @@ nnoremap <C-P> :bprev<CR>
 " Выключаем звук в Vim
 set visualbell t_vb=
  
-"set guifont=Monaco:h18
+"set guifont=Monaco:h20
  
 " Disable autoindent for paste from buffer
 set paste
