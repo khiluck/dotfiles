@@ -30,6 +30,7 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
+	{ "Galculator",     NULL,       NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 
@@ -75,7 +76,8 @@ static const char *cmdlock[]  = { "slock", NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
-	{ WINKEY,	                XK_s,      spawn,          SHCMD("screenshot") },
+	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot") },
+	{ WINKEY,		                XK_c,      spawn,          SHCMD("galculator") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
