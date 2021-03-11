@@ -22,4 +22,5 @@ clear
 # If PORT variable is not empty, connect using -p option
 echo "Connecting to IP: [$IP];"
 #$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /f /scale:140 /scale-desktop:140 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z 
-$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /f /smart-sizing:1366x768 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z 
+#$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /f /smart-sizing:1366x768 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z 
+$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1424x771 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z 
