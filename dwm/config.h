@@ -78,6 +78,7 @@ static Key keys[] = {
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
 	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot") },
 	{ WINKEY,		                XK_c,      spawn,          SHCMD("galculator") },
+	{ WINKEY,		                XK_z,      spawn,          SHCMD("sudo brnorm") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
