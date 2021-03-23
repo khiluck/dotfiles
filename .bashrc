@@ -7,11 +7,13 @@ then
 	PATH="$HOME/scripts:$PATH"
 fi
 
+# Python PATH
+PATH="$PATH:/home/aex/.local/bin"
 
 # set aliases
 
 # alias mount office share
-alias share='sudo mount -t cifs -o username=guest,password=guest,uid=1000 //192.168.0.100/share /mnt/share/'
+#alias share='sudo mount -t cifs -o username=guest,password=guest,uid=1000 //192.168.0.100/share /mnt/share/'
 
 alias sudo='sudo '
 alias vi='vim'
@@ -67,7 +69,8 @@ PS1="\[$clrcyan\]\u\[$clrwhite\]@\[$clrpurple\]\w\`if [ \$? = 0 ]; then echo -e 
 pass()
 {
 	# generate password if no parameter was passed
-	[ $# -eq 0 ] && { echo $(< /dev/urandom tr -dc a-zA-Z0-9 | head -c12); return 0; } | xclip -r -l 1
+	[ $# -eq 0 ] &&	{ TEMPASS=$(< /dev/urandom tr -dc a-zA-Z0-9 | head -c12); echo $TEMPASS; echo $TEMPASS | xclip -r -l 1; echo $TEMPASS | xclip -selection clipboard; } || 
+{ TEMPASS=""; for i in $(eval echo {1..$1}); do echo $(< /dev/urandom tr -dc a-zA-Z0-9 | head -c12); done; }
 }
 
 
@@ -89,4 +92,15 @@ dl(){
 # copy using rsync
 rcp(){
 	rsync --info=progress2 $1 $2
+}
+
+# search using find 
+f(){
+	find / -name "$1" 2>/dev/null
+}
+
+# update all
+update(){
+	sudo pacman -Syu
+	yay -Syu
 }
