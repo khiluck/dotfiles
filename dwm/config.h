@@ -31,6 +31,7 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ "Galculator",     NULL,       NULL,       0,            1,           -1 },
+	{ "Webcamtoggle",     NULL,       NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 
@@ -79,6 +80,9 @@ static Key keys[] = {
 	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot") },
 	{ WINKEY,		                XK_c,      spawn,          SHCMD("galculator") },
 	{ WINKEY,		                XK_z,      spawn,          SHCMD("sudo brnorm") },
+	{ WINKEY,		                XK_p,      spawn,          SHCMD("pass.sh") },
+	{ WINKEY,		                XK_w,      spawn,          SHCMD("screencast") },
+	{ WINKEY,		                XK_q,      spawn,          SHCMD("webcamtoggle") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
