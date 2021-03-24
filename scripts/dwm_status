@@ -76,10 +76,14 @@ print_record(){
 	echo " $size $(basename $rp)"
 }
 
+print_rec(){
+	[ -f /tmp/screencast ] && echo "⏺️Rec"
+}
+
 while true
 do
 #	xsetroot -name "$(print_mem) $(print_network) $(print_temp) $(print_wifi) $(print_bat) $(print_record) $(print_date)"
-	xsetroot -name " ⌨ $(print_layout)  $(print_temp)  "⚡"$(print_bat)%  $(print_date)"
+	xsetroot -name "$(print_rec)  ⌨ $(print_layout)  $(print_temp)  "⚡"$(print_bat)%  $(print_date)"
 	sleep 1
 done
 
