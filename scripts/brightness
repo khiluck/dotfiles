@@ -5,11 +5,11 @@ bdv=$(cat $bd)
 
 case $1 in
 	up)
-		echo $(( bdv + 20 )) > $bd
+		echo $(( bdv + 10 )) > $bd
 		cat $bd
 	;;
 	down)
-		echo $(( bdv - 20 )) > $bd
+		echo $(( bdv - 10 )) > $bd
 		cat $bd
 	;;
 	*)

@@ -2,7 +2,7 @@
 # Network speed stuff stolen from http://linuxclues.blogspot.sg/2009/11/shell-script-show-network-speed.html
 
 print_cpu() {
-	echo -e "CPU:$(top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}')%"
+	echo -e "CPU:$(top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}' | cut -f1 -d'.')%"
 }
 
 
@@ -17,20 +17,6 @@ print_layout() {
 }
 
 
-print_wifi() {
-	ip=$(ip route get 8.8.8.8 2>/dev/null|grep -Eo 'src [0-9.]+'|grep -Eo '[0-9.]+')
-	if=wlp4s0
-		while IFS=$': \t' read -r label value
-		do
-			case $label in SSID) SSID=$value
-				;;
-			signal) SIGNAL=$value
-				;;
-		esac
-	done < <(iw "$if" link)
-	echo -e "$SSID $SIGNAL $ip"
-}
-
 print_mem(){
 #	echo $(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
 	FREE_DATA=`free -m | grep Mem`
@@ -41,64 +27,143 @@ print_mem(){
 
 
 print_hdd(){
-	echo "HDD:$(df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1)%"
+	echo "🖴 $(df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1)%"
 }
 
-
-print_network(){
-	logfile=/dev/shm/netlog
-	[ -f "$logfile" ] || echo "0 0" > "$logfile"
-	read -r rxprev txprev < "$logfile"
-	rxcurrent="$(($(paste -d '+' /sys/class/net/[wl]*/statistics/rx_bytes)))"
-	txcurrent="$(($(paste -d '+' /sys/class/net/[wl]*/statistics/tx_bytes)))"
-	echo "D:$(bc <<< "scale=2; ($rxcurrent-$rxprev) / 10^6")" "U:$(bc <<< "scale=2; ($txcurrent-$txprev) / 10^6")"
-	echo "$rxcurrent $txcurrent" > "$logfile"
-}
 
 print_temp(){
 #	[ -f /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input ] && echo "$(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input)℃"
 #	test -f /sys/class/thermal/thermal_zone0/temp || return 0
 #	echo $(head -c 2 /sys/class/thermal/thermal_zone0/temp)C
-	sensors | awk '/temp1/ {print $2}'
+	sensors | awk '/temp1/ {print $2}' | cut -c2- | cut -f1 -d'.'
 }
 
-print_bat(){
-	hash acpi || return 0
-	onl="$(grep "on-line" <(acpi -V))"
-	charge="$(awk '{ sum += $1 } END { print sum }' /sys/class/power_supply/BAT*/capacity)"
-	if test -z "$onl"
-	then
-		# suspend when we close the lid
-		#systemctl --user stop inhibit-lid-sleep-on-battery.service
-		echo -e "${charge}"
-	else
-		# On mains! no need to suspend
-		#systemctl --user start inhibit-lid-sleep-on-battery.service
-		echo -e "${charge}"
-	fi
+
+print_internet(){
+	# Show wifi 📶 and percent strength or 📡 if none.
+	# Show 🌐 if connected to ethernet or ❎ if none.
+	# Show 🔒 if a vpn connection is active
+
+	case $BLOCK_BUTTON in
+		1) "$TERMINAL" -e nmtui; pkill -RTMIN+4 dwmblocks ;;
+		3) notify-send "🌐 Internet module" "\- Click to connect
+	📡: no wifi connection
+	📶: wifi connection with quality
+	❎: no ethernet
+	🌐: ethernet working
+	🔒: vpn is active
+	" ;;
+		6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+	esac
+
+	case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
+		down) wifiicon="📡 " ;;
+		up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
+	esac
+
+	printf "%s%s%s\n" "$wifiicon" "$(sed "s/down/❎/;s/up/🌐/" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"
 }
+
+
+print_battery(){
+
+	# Prints all batteries, their percentage remaining and an emoji corresponding
+	# to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
+
+	case $BLOCK_BUTTON in
+		3) notify-send "🔋 Battery module" "🔋: discharging
+	🛑: not charging
+	♻: stagnant charge
+	🔌: charging
+	⚡: charged
+	❗: battery very low!
+	- Scroll to change adjust xbacklight." ;;
+		4) xbacklight -inc 10 ;;
+		5) xbacklight -dec 10 ;;
+		6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+	esac
+
+	# Loop through all attached batteries and format the info
+	for battery in /sys/class/power_supply/BAT?*; do
+		# If non-first battery, print a space separator.
+		[ -n "${capacity+x}" ] && printf " "
+		# Sets up the status and capacity
+		case "$(cat "$battery/status")" in
+			"Full") status="⚡" ;;
+			"Discharging") status="🔋" ;;
+			"Charging") status="🔌" ;;
+			"Not charging") status="🛑" ;;
+			"Unknown") status="♻️" ;;
+		esac
+		capacity=$(cat "$battery/capacity")
+		# Will make a warn variable if discharging and low
+		[ "$status" = "🔋" ] && [ "$capacity" -le 25 ] && warn="❗"
+		# Prints the info
+		printf "%s%s%d%%" "$status" "$warn" "$capacity"; unset warn
+	done && exit 0
+
+}
+
+print_volume(){
+	# Prints the current volume or 🔇 if muted.
+
+	case $BLOCK_BUTTON in
+		1) setsid -f "$TERMINAL" -e pulsemixer ;;
+		2) pamixer -t ;;
+		4) pamixer --allow-boost -i 1 ;;
+		5) pamixer --allow-boost -d 1 ;;
+		3) notify-send "📢 Volume module" "\- Shows volume 🔊, 🔇 if muted.
+	- Middle click to mute.
+	- Scroll to change." ;;
+		6) "$TERMINAL" -e "$EDITOR" "$0" ;;
+	esac
+
+	[ $(pamixer --get-mute) = true ] && echo 🔇 && exit
+
+	vol="$(pamixer --get-volume)"
+
+	if [ "$vol" -gt "70" ]; then
+		icon="🔊"
+	elif [ "$vol" -lt "30" ]; then
+		icon="🔈"
+	else
+		icon="🔉"
+	fi
+
+	echo "$icon$vol%"
+}
+
+print_brightness(){
+	brlevel="$(echo "scale = 2; $(cat /sys/class/backlight/amdgpu_bl0/brightness)/250*100" | bc | cut -f1 -d'.')"
+	if [ "$brlevel" -gt "50" ]; then
+		icon="🔆"
+	else
+		icon="🔅"
+	fi
+
+	echo "$icon$brlevel%"
+}
+
+
 
 print_date(){
 #	echo $(date "+%a %m-%d %T%:::z") $(TZ=CET date "+ %H%:::z")
-	echo $(date "+%d-%b-%y ⌚%T")
-}
-
-print_record(){
-	# https://github.com/kaihendry/recordmydesktop2.0/
-	test -f /tmp/r2d2 || return
-	rp=$(cat /tmp/r2d2 | awk '{print $2}')
-	size=$(du -h $rp | awk '{print $1}')
-	echo " $size $(basename $rp)"
+	echo "🗓️ $(date "+%d-%b-%y | 🕙%T")"
 }
 
 print_rec(){
-	[ -f /tmp/screencast ] && echo "⏺️Rec"
+	[ -f /tmp/screencast ] && echo " ⏺️"
 }
+
+print_webcam(){
+	[ -f /tmp/webcam ] && echo " 📸"
+}
+
 
 while true
 do
-#	xsetroot -name "$(print_mem) $(print_network) $(print_temp) $(print_wifi) $(print_bat) $(print_record) $(print_date)"
-	xsetroot -name "$(print_rec) ⌨ $(print_layout) $(print_mem) $(print_cpu) $(print_temp) $(print_hdd) "⚡"$(print_bat)% $(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_cpu) | 🌡️$(print_temp)° | $(print_battery) | $(print_brightness) | $(print_volume) | $(print_internet) | $(print_date)"
 	sleep 1
 done
+
 
