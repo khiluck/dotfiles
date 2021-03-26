@@ -11,7 +11,7 @@ print_layout() {
 	case $(setxkbmap -query | grep "layout:" | awk '{print $2}') in
 		"us") KBD="En" ;;
 		"ru") KBD="Ru" ;;
-		"ua") KBD="Ua" ;;
+		"ua") KBD="Uk" ;;
 	esac
 
 	printf "%s" "$KBD"
