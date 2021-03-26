@@ -69,9 +69,9 @@ static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
 static const char *termcmd[]  = { "st", NULL };
 static const char *cmdbrightnessup[]  = { "sudo", "brightness", "up", NULL };
 static const char *cmdbrightnessdown[]  = { "sudo", "brightness", "down", NULL };
-static const char *cmdsoundup[]  = { "amixer", "-q", "sset", "Master", "5%+", NULL };
-static const char *cmdsounddown[]  = { "amixer", "-q", "sset", "Master", "5%-", NULL };
-static const char *cmdsoundtoggle[]  = { "amixer", "-q", "sset", "Master", "toggle", NULL };
+static const char *cmdsoundup[]  = { "volumecontrol", "up", NULL };
+static const char *cmdsounddown[]  = { "volumecontrol", "down", NULL };
+static const char *cmdsoundtoggle[]  = { "volumecontrol", "mute", NULL };
 static const char *cmdlock[]  = { "slock", NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -83,6 +83,7 @@ static Key keys[] = {
 	{ WINKEY,		                XK_w,      spawn,          SHCMD("screencast") },
 	{ WINKEY,		                XK_q,      spawn,          SHCMD("webcamtoggle") },
 	{ WINKEY,						XK_grave,	spawn,			SHCMD("dmenuunicode") },
+	{ WINKEY,						XK_space,	spawn,			SHCMD("swlayout") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },

@@ -1,16 +1,17 @@
 #!/bin/bash
 
 start_webcam(){
-	touch /tmp/webcam
-	mpv --geometry=-0-0 --autofit=30% /dev/video0
+	touch /tmp/webcam && sleep 0.5s && refbar
+	mpv --geometry=-0-0 --autofit=30% /dev/video0 
 }
 
 
 stop_webcam(){
-	rm -f /tmp/webcam
+	rm -f /tmp/webcam && refbar
 	pkill -2 mpv
 }
 
 
 
 stop_webcam || start_webcam
+

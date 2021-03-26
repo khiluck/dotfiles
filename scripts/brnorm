@@ -4,3 +4,5 @@ bd=/sys/class/backlight/amdgpu_bl0/brightness
 bdv=$(cat $bd)
 
 echo $(( bdv = 70 )) > $bd
+
+refbar

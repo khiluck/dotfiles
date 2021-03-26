@@ -1,7 +1,7 @@
 #!/bin/bash
 
 start_screencast(){
-	touch /tmp/screencast
+	touch /tmp/screencast && sleep 0.5s && refbar
 	filename="output-$(date +%F_%T).mkv"
 	tmpfilename="/tmp/$filename"
 	resfilename="$HOME/Videos/$filename"
@@ -13,8 +13,9 @@ start_screencast(){
 
 
 stop_screencast(){
-	rm -f /tmp/screencast
+	rm -f /tmp/screencast && refbar
 	pkill -2 ffmpeg
 }
 
 stop_screencast || start_screencast
+

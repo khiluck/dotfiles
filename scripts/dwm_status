@@ -2,18 +2,14 @@
 # Network speed stuff stolen from http://linuxclues.blogspot.sg/2009/11/shell-script-show-network-speed.html
 
 print_cpu() {
-	echo -e "CPU:$(top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}' | cut -f1 -d'.')%"
+	GETCPU=$(top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}' | cut -f1 -d'.')
+	printf "CPU:%s%%" "$GETCPU"
 }
 
 
 print_layout() {
-	case "$(xset -q | grep LED | awk '{ print $10 }')" in
-	  "0000000"[0-3]) KBD="En" ;;
-	  "0000100"[0-3]) KBD="Ru" ;;
-	  *) KBD="unknown" ;;
-	esac
-
-	echo -e "$KBD"
+	(setxkbmap -query | grep -q "layout:\s\+us") && KBD="En" || KBD="Ru"
+	printf "%s" "$KBD"
 }
 
 
@@ -22,42 +18,28 @@ print_mem(){
 	FREE_DATA=`free -m | grep Mem`
 	CURRENT=`echo $FREE_DATA | cut -f3 -d' '`
 	TOTAL=`echo $FREE_DATA | cut -f2 -d' '`
-	echo "RAM:$(echo "scale = 2; $CURRENT/$TOTAL*100" | bc)%"
+	PRINTMEM=$(echo "scale = 2; $CURRENT/$TOTAL*100" | bc)
+	printf "RAM:%s%%" "$PRINTMEM"
 }
 
 
 print_hdd(){
-	echo "🖴 $(df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1)%"
+	PRINTHDD=$(df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1)
+	printf "🖴 %%"
 }
 
 
 print_temp(){
-#	[ -f /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input ] && echo "$(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input)℃"
-#	test -f /sys/class/thermal/thermal_zone0/temp || return 0
-#	echo $(head -c 2 /sys/class/thermal/thermal_zone0/temp)C
-	sensors | awk '/temp1/ {print $2}' | cut -c2- | cut -f1 -d'.'
+	PRINTTEMP=$(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input)
+	printf "%s" "$PRINTTEMP"
+#	sensors | awk '/temp1/ {print $2}' | cut -c2- | cut -f1 -d'.'
 }
 
 
 print_internet(){
-	# Show wifi 📶 and percent strength or 📡 if none.
-	# Show 🌐 if connected to ethernet or ❎ if none.
-	# Show 🔒 if a vpn connection is active
-
-	case $BLOCK_BUTTON in
-		1) "$TERMINAL" -e nmtui; pkill -RTMIN+4 dwmblocks ;;
-		3) notify-send "🌐 Internet module" "\- Click to connect
-	📡: no wifi connection
-	📶: wifi connection with quality
-	❎: no ethernet
-	🌐: ethernet working
-	🔒: vpn is active
-	" ;;
-		6) "$TERMINAL" -e "$EDITOR" "$0" ;;
-	esac
-
 	case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
 		down) wifiicon="📡 " ;;
+		#up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
 		up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
 	esac
 
@@ -66,24 +48,6 @@ print_internet(){
 
 
 print_battery(){
-
-	# Prints all batteries, their percentage remaining and an emoji corresponding
-	# to charge status (🔌 for plugged up, 🔋 for discharging on battery, etc.).
-
-	case $BLOCK_BUTTON in
-		3) notify-send "🔋 Battery module" "🔋: discharging
-	🛑: not charging
-	♻: stagnant charge
-	🔌: charging
-	⚡: charged
-	❗: battery very low!
-	- Scroll to change adjust xbacklight." ;;
-		4) xbacklight -inc 10 ;;
-		5) xbacklight -dec 10 ;;
-		6) "$TERMINAL" -e "$EDITOR" "$0" ;;
-	esac
-
-	# Loop through all attached batteries and format the info
 	for battery in /sys/class/power_supply/BAT?*; do
 		# If non-first battery, print a space separator.
 		[ -n "${capacity+x}" ] && printf " "
@@ -105,19 +69,6 @@ print_battery(){
 }
 
 print_volume(){
-	# Prints the current volume or 🔇 if muted.
-
-	case $BLOCK_BUTTON in
-		1) setsid -f "$TERMINAL" -e pulsemixer ;;
-		2) pamixer -t ;;
-		4) pamixer --allow-boost -i 1 ;;
-		5) pamixer --allow-boost -d 1 ;;
-		3) notify-send "📢 Volume module" "\- Shows volume 🔊, 🔇 if muted.
-	- Middle click to mute.
-	- Scroll to change." ;;
-		6) "$TERMINAL" -e "$EDITOR" "$0" ;;
-	esac
-
 	[ $(pamixer --get-mute) = true ] && echo 🔇 && exit
 
 	vol="$(pamixer --get-volume)"
@@ -130,7 +81,7 @@ print_volume(){
 		icon="🔉"
 	fi
 
-	echo "$icon$vol%"
+	printf "%s%s%%" "$icon" "$vol"
 }
 
 print_brightness(){
@@ -141,29 +92,30 @@ print_brightness(){
 		icon="🔅"
 	fi
 
-	echo "$icon$brlevel%"
+	printf "%s%s%%" "$icon" "$brlevel"
 }
 
 
 
 print_date(){
-#	echo $(date "+%a %m-%d %T%:::z") $(TZ=CET date "+ %H%:::z")
-	echo "🗓️ $(date "+%d-%b-%y | 🕙%T")"
+	PRINTDATE=$(date "+%d-%b-%y | 🕙%H:%M")
+	printf "🗓️ %s" "$PRINTDATE"
 }
 
 print_rec(){
-	[ -f /tmp/screencast ] && echo " ⏺️"
+	[ -f /tmp/screencast ] && printf " ⏺️"
 }
 
 print_webcam(){
-	[ -f /tmp/webcam ] && echo " 📸"
+	[ -f /tmp/webcam ] && printf " 📸"
 }
 
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_cpu) | 🌡️$(print_temp)° | $(print_battery) | $(print_brightness) | $(print_volume) | $(print_internet) | $(print_date)"
-	sleep 1
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_battery) | $(print_brightness) | $(print_volume) | $(print_internet) | $(print_date)"
+	sleep 60s
 done
+
 
 

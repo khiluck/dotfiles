@@ -7,17 +7,15 @@ xset -b
 xset r rate 200 20
 
 # toggle keyboard layouts
-setxkbmap -model thinkpad -layout us,ru -option "grp:win_space_toggle"
-#setxkbmap -model thinkpad -layout us,ru,ua -option "grp:win_space_toggle"
-#setxkbmap -model thinkpad -layout us -option caps:escape
+#setxkbmap -model thinkpad -layout us,ru -option "grp:win_space_toggle"
 xset m 5 1
 
 # turn off display energy save mode
 #xset -dpms
 xset s off
 
-xrandr --output eDP --set TearFree on
-#~/scripts/extmon
+#xrandr --output eDP --set TearFree on
+~/scripts/extmon
 
 
 
@@ -30,7 +28,7 @@ xcompmgr &
 echo "70" | sudo tee /sys/class/backlight/amdgpu_bl0/brightness
 
 # set wallpaper
-[ -f ~/Pictures/desktop.jpg ] && feh --bg-scale ~/Pictures/desktop.jpg
+feh --bg-scale $(find ~/Pictures/*.jpg -type f | shuf -n 1)
 
 # check logitech mouse on startup, if connected - disable touchpad
 #[ -n $(lsusb | grep -i "unifying receiver") ]] && synclient TouchpadOff=1 || synclient TouchpadOff=0
