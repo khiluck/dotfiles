@@ -7,8 +7,8 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 /*static const char *fonts[]          = { "monospace:size=15" };
 static const char dmenufont[]       = "monospace:size=15";*/
-static const char *fonts[]          = { "Terminus (TTF):pixelsize=28:antialias=true:autohint=true" };
-static const char dmenufont[]       = "Terminus (TTF):pixelsize=28:antialias=true:autohint=true";
+static const char *fonts[]          = { "Monaco:pixelsize=19:antialias=true:autohint=true", "JoyPixels:pixelsize=19:antialias=true:autohint=true"};
+static const char dmenufont[]       = "Monaco:pixelsize=19:antialias=true:autohint=true";
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#bbbbbb";
@@ -31,7 +31,6 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ "Galculator",     NULL,       NULL,       0,            1,           -1 },
-	{ "Webcamtoggle",     NULL,       NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 
@@ -83,6 +82,7 @@ static Key keys[] = {
 	{ WINKEY,		                XK_p,      spawn,          SHCMD("pass.sh") },
 	{ WINKEY,		                XK_w,      spawn,          SHCMD("screencast") },
 	{ WINKEY,		                XK_q,      spawn,          SHCMD("webcamtoggle") },
+	{ WINKEY,						XK_grave,	spawn,			SHCMD("dmenuunicode") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },

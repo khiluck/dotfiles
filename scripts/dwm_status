@@ -1,6 +1,11 @@
 #!/bin/bash
 # Network speed stuff stolen from http://linuxclues.blogspot.sg/2009/11/shell-script-show-network-speed.html
 
+print_cpu() {
+	echo -e "CPU:$(top -b -n1 | grep "Cpu(s)" | awk '{print $2 + $4}')%"
+}
+
+
 print_layout() {
 	case "$(xset -q | grep LED | awk '{ print $10 }')" in
 	  "0000000"[0-3]) KBD="En" ;;
@@ -27,8 +32,18 @@ print_wifi() {
 }
 
 print_mem(){
-	echo $(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
+#	echo $(($(grep -m1 'MemAvailable:' /proc/meminfo | awk '{print $2}') / 1024))
+	FREE_DATA=`free -m | grep Mem`
+	CURRENT=`echo $FREE_DATA | cut -f3 -d' '`
+	TOTAL=`echo $FREE_DATA | cut -f2 -d' '`
+	echo "RAM:$(echo "scale = 2; $CURRENT/$TOTAL*100" | bc)%"
 }
+
+
+print_hdd(){
+	echo "HDD:$(df -lh | awk '{if ($6 == "/") { print $5 }}' | head -1 | cut -d'%' -f1)%"
+}
+
 
 print_network(){
 	logfile=/dev/shm/netlog
@@ -41,10 +56,10 @@ print_network(){
 }
 
 print_temp(){
-	test -f /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input || return 0
+#	[ -f /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input ] && echo "$(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input)℃"
 #	test -f /sys/class/thermal/thermal_zone0/temp || return 0
 #	echo $(head -c 2 /sys/class/thermal/thermal_zone0/temp)C
-	echo $(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input)℃
+	sensors | awk '/temp1/ {print $2}'
 }
 
 print_bat(){
@@ -65,7 +80,7 @@ print_bat(){
 
 print_date(){
 #	echo $(date "+%a %m-%d %T%:::z") $(TZ=CET date "+ %H%:::z")
-	echo $(date "+%d-%b-%y  ⌚%T")
+	echo $(date "+%d-%b-%y ⌚%T")
 }
 
 print_record(){
@@ -83,7 +98,7 @@ print_rec(){
 while true
 do
 #	xsetroot -name "$(print_mem) $(print_network) $(print_temp) $(print_wifi) $(print_bat) $(print_record) $(print_date)"
-	xsetroot -name "$(print_rec)  ⌨ $(print_layout)  $(print_temp)  "⚡"$(print_bat)%  $(print_date)"
+	xsetroot -name "$(print_rec) ⌨ $(print_layout) $(print_mem) $(print_cpu) $(print_temp) $(print_hdd) "⚡"$(print_bat)% $(print_date)"
 	sleep 1
 done
 
