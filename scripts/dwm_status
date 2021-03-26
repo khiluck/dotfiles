@@ -8,7 +8,12 @@ print_cpu() {
 
 
 print_layout() {
-	(setxkbmap -query | grep -q "layout:\s\+us") && KBD="En" || KBD="Ru"
+	case $(setxkbmap -query | grep "layout:" | awk '{print $2}') in
+		"us") KBD="En" ;;
+		"ru") KBD="Ru" ;;
+		"ua") KBD="Ua" ;;
+	esac
+
 	printf "%s" "$KBD"
 }
 
@@ -38,8 +43,7 @@ print_temp(){
 
 print_internet(){
 	case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
-		down) wifiicon="📡 " ;;
-		#up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
+		down) wifiicon="❎ " ;;
 		up) wifiicon="$(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
 	esac
 
@@ -98,7 +102,7 @@ print_brightness(){
 
 
 print_date(){
-	PRINTDATE=$(date "+%d-%b-%y | 🕙%H:%M")
+	PRINTDATE=$(date "+%d-%b-%y | 🕙 %H:%M ")
 	printf "🗓️ %s" "$PRINTDATE"
 }
 
@@ -109,7 +113,6 @@ print_rec(){
 print_webcam(){
 	[ -f /tmp/webcam ] && printf " 📸"
 }
-
 
 while true
 do
