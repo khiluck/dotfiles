@@ -1,25 +1,33 @@
 #!/bin/bash
-
 export TERM=xterm
-
 clear
 
-# Read command output line by line into array ${lines [@]}
-readarray -t lines < <(sort -k1 ~/secret/ip.list | grep "^[^#;]" | sed -e "s/[[:space:]]\+/ /g")
 
-# Prompt the user to select one of the lines.
+namearray=() 
+iparray=()
+while IFS=' ' read -r connectionname ipaddress
+do
+	namearray+=("$connectionname")
+	iparray+=("$ipaddress")
+done < <(sort -k1 ~/secret/ip.list | grep "^[^#;]" | sed -e "s/[[:space:]]\+/ /g")
+
+
 echo "Please select server:"
-echo "(Ctrl+C for exit)"
+echo "(Ctrl+c for exit)"
 echo ""
-select choice in "${lines[@]}"; do
-  [[ -n $choice ]] || { echo "Invalid choice. Please try again." >&2; continue; }
-  break # valid choice was made; exit prompt.
+select choice in "${namearray[@]}"; do
+	[[ -n $choice ]] || { echo "Invalid choice. Please try again." >&2; continue; }
+	break # valid choice was made; exit prompt.
 done
 
-# Split the chosen line into ID and serial number.
-read -r SN IP PORT unused <<<"$choice"
 
-clear
+for ((a=0; a < ${#namearray[*]}; a++))
+do
+	if [[ "${namearray[$a]}" = "${choice}" ]]; then
+		read -r IP PORT unused <<<"${iparray[$a]}"
+	fi
+done
+
 
 # If PORT variable is not empty, connect using -p option
 [[ -z $PORT ]] || { echo "Connecting to IP: [$IP]; Port: [$PORT]"; $(which ssh) -lroot $IP -p $PORT; exit; }
