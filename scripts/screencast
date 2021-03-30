@@ -5,7 +5,8 @@ start_screencast(){
 	filename="output-$(date +%F_%T).mkv"
 	tmpfilename="/tmp/$filename"
 	resfilename="$HOME/Videos/$filename"
-	ffmpeg -y -f x11grab -s $(xdpyinfo | grep dimensions | awk '{print $2;}') -i :0.0 -f alsa -i default -c:v libx264 -r 30 -c:a flac $resfilename
+	ffmpeg -y -f x11grab -s $(xdpyinfo | grep dimensions | awk '{print $2;}') -i :0.0 -f pulse -i default -c:v libx264 -r 30 -c:a flac $resfilename
+	#ffmpeg -y -f x11grab -s $(xdpyinfo | grep dimensions | awk '{print $2;}') -i :0.0 -f alsa -i default -c:v libx264 -r 30 -c:a flac $resfilename
 }
 
 
