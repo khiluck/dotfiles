@@ -1,0 +1,2 @@
+#!/bin/bash
+$(which xwallpaper) --zoom "$(find $HOME/Pictures/wallpapers -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" -type f | shuf -n1)"

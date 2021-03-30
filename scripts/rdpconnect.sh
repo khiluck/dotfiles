@@ -11,13 +11,17 @@ do
 done < <(sort -k1 ~/secret/rdp.list | grep "^[^#;]" | sed -e "s/[[:space:]]\+/ /g")
 
 
-echo "Please select server:"
-echo "(Ctrl+c for exit)"
-echo ""
-select choice in "${namearray[@]}"; do
-	[[ -n $choice ]] || { echo "Invalid choice. Please try again." >&2; continue; }
-	break # valid choice was made; exit prompt.
-done
+if [[ -f $(which dmenu 2>/dev/null) ]]; then
+    choice=$(printf "%s\n" "${namearray[@]}" | dmenu -i -l 30 | sed "s/ .*//")
+else
+	echo "Please select server:"
+	echo "(Ctrl+c for exit)"
+	echo ""
+	select choice in "${namearray[@]}"; do
+		[[ -n $choice ]] || { echo "Invalid choice. Please try again." >&2; continue; }
+		break # valid choice was made; exit prompt.
+	done
+fi
 
 
 for ((a=0; a < ${#namearray[*]}; a++))

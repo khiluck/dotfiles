@@ -6,9 +6,6 @@ start_screencast(){
 	tmpfilename="/tmp/$filename"
 	resfilename="$HOME/Videos/$filename"
 	ffmpeg -y -f x11grab -s $(xdpyinfo | grep dimensions | awk '{print $2;}') -i :0.0 -f alsa -i default -c:v libx264 -r 30 -c:a flac $resfilename
-#	ffmpeg -y -f x11grab -s $(xdpyinfo | grep dimensions | awk '{print $2;}') -i :0.0 -f alsa -i default -c:v libx264rgb -crf 0 -preset ultrafast -r 30 -c:a flac $tmpfilename
-#	ffmpeg -y -ss 2 -i $tmpfilename -c:v libx264 -c:a copy $resfilename
-#	rm -f $tmpfilename
 }
 
 

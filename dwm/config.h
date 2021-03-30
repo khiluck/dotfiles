@@ -75,6 +75,8 @@ static const char *cmdsoundtoggle[]  = { "volumecontrol", "mute", NULL };
 static const char *cmdlock[]  = { "slock", NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
+	{ MODKEY,                       XK_c,      spawn,          SHCMD("st -e connect.sh") },
+	{ MODKEY,                       XK_r,      spawn,          SHCMD("st -e rdpconnect.sh") },
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
 	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot") },
 	{ WINKEY,		                XK_c,      spawn,          SHCMD("galculator") },
