@@ -98,44 +98,63 @@ unsigned int tabspaces = 8;
 /* bg opacity */
 float alpha = 0.9;
 
+
+
+
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
 
   /* 8 normal colors */
-  [0] = "#272822", /* black   */
-  [1] = "#FF6188", /* red     */
-  [2] = "#A9DC76", /* green   */
-  [3] = "#FC9867", /* yellow  */
-  [4] = "#78DCE8", /* blue    */
-  [5] = "#AB9DF2", /* magenta */
-  [6] = "#a1efe4", /* cyan    */
-  [7] = "#f8f8f2", /* white   */
+  [0] = "#2e3436", /* black   */
+  [1] = "#cc0000", /* red     */
+  [2] = "#4e9a06", /* green   */
+  [3] = "#c4a000", /* yellow  */
+  [4] = "#3465a4", /* blue    */
+  [5] = "#75507b", /* magenta */
+  [6] = "#06989a", /* cyan    */
+  [7] = "#d3d7cf", /* white   */
 
   /* 8 bright colors */
-  [8]  = "#75715e",  /* black   */
-  [9]  = "#f92672",  /* red     */
-  [10] = "#a6e22e", /* green   */
-  [11] = "#f4bf75", /* yellow  */
-  [12] = "#66d9ef", /* blue    */
-  [13] = "#ae81ff", /* magenta */
-  [14] = "#a1efe4", /* cyan    */
-  [15] = "#f9f8f5", /* white   */
+  [8]  = "#555753", /* black   */
+  [9]  = "#ef2929", /* red     */
+  [10] = "#8ae234", /* green   */
+  [11] = "#fce94f", /* yellow  */
+  [12] = "#729fcf", /* blue    */
+  [13] = "#ad7fa8", /* magenta */
+  [14] = "#34e2e2", /* cyan    */
+  [15] = "#eeeeec", /* white   */
 
   /* special colors */
-  [256] = "#272822", /* background */
-  [257] = "#f8f8f2", /* foreground */
-  [258] = "#f92672",     /* cursor */
+  [256] = "#2b2b2b", /* background */
+  [257] = "#dedede", /* foreground */
 };
-
 
 /*
  * Default colors (colorname index)
- * foreground, background, cursor, reverse cursor
+ * foreground, background, cursor
  */
-unsigned int defaultbg = 0;
 unsigned int defaultfg = 257;
-unsigned int defaultcs = 258;
-unsigned int defaultrcs= 258;
+unsigned int defaultbg = 256;
+static unsigned int defaultcs = 257;
+static unsigned int defaultrcs = 257;
+
+/*
+ * Colors used, when the specific fg == defaultfg. So in reverse mode this
+ * will reverse too. Another logic would only make the simple feature too
+ * complex.
+ */
+static unsigned int defaultitalic = 7;
+static unsigned int defaultunderline = 7;
+
+
+
+
+
+
+
+
+
+
 
 
 
