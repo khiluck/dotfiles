@@ -1,6 +1,6 @@
 #!/bin/bash
 clear
-gpg --batch --yes -d -o $HOME/secret/rdp.list $HOME/secret/rdp.list.gpg
+gpg --batch --yes -d -o $HOME/secret/rdp.list $HOME/secret/rdp.list.gpg || exit 1
 
 namearray=()
 iparray=()
