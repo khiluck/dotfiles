@@ -1,10 +1,23 @@
+
 syntax on
 " colors
 "colorscheme solarized
 colorscheme solas
 
+
 set nocompatible              " be iMproved, required
 filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+" A Vim Plugin for Lively Previewing LaTeX PDF Output
+call vundle#end()
+
+
 
 " Настройки табов для Python, согласно рекоммендациям
 set tabstop=4 
@@ -65,3 +78,52 @@ set paste
  
 " highlights parentheses
 set showmatch
+
+
+
+
+
+
+
+
+
+" specify file formats
+set fileformats=unix,dos
+ 
+" take 50 search histories
+set history=50
+ 
+" ignore Case
+set ignorecase
+ 
+" distinct Capital if you mix it in search words
+set smartcase
+ 
+" highlights matched words
+" if not, specify [ set nohlsearch ]
+set hlsearch
+ 
+" use incremental search
+" if not, specify [ set noincsearch ]
+set incsearch
+ 
+" show line number
+" if not, specify [ set nonumber ]
+"set number
+ 
+" Visualize break ( $ ) or tab ( ^I )
+"set list
+ 
+" not insert LF at the end of file
+set binary noeol
+ 
+" enable auto-indent
+" if not, specify [ noautoindent ]
+"set autoindent
+ 
+" change colors for comments if it's set [ syntax on ]
+highlight Comment ctermfg=DarkGray
+ 
+" when you type _bash word it will translate into shebang )
+abbr _bash #!/bin/bash<CR>
+ 
