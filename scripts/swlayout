@@ -2,9 +2,11 @@
 
 #(setxkbmap -query | grep -q "layout:\s\+us") && setxkbmap ru || setxkbmap us
 case $(setxkbmap -query | grep "layout:" | awk '{print $2}') in
+#	"us") setxkbmap ru ;;
+#	"ru") setxkbmap ua ;;
+#	"ua") setxkbmap us ;;	
 	"us") setxkbmap ru ;;
-	"ru") setxkbmap ua ;;
-	"ua") setxkbmap us ;;	
+	"ru") setxkbmap us ;;
 esac
 
 refbar
