@@ -2,8 +2,7 @@
 
 start_webcam(){
 	touch /tmp/webcam && sleep 0.5s && refbar
-	#mpv -vf "hflip" --geometry=-0-0 --autofit=30% /dev/video0 
-	mpv --no-cache --no-osc --no-input-default-bindings --profile=low-latency --input-conf=/dev/null --title=webcam /dev/video0 -vf "hflip"
+	mpv --demuxer-lavf-o=video_size=640x360,input_format=mjpeg av://v4l2:/dev/video0 --profile=low-latency --untimed -vf "hflip" --title=webcam --no-cache --no-osc --no-input-default-bindings
 }
 
 
