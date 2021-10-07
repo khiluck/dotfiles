@@ -6,6 +6,11 @@ print_cpu() {
 	printf "CPU:%s%%" "$GETCPU"
 }
 
+print_cputemp() {
+	GETCPUTEMP=$(cat /sys/class/thermal/thermal_zone2/temp)
+	CPUTEMPC=$(echo "$GETCPUTEMP/1000" | bc)
+	printf "🌡️%s℃" "$CPUTEMPC"
+}
 
 print_layout() {
 	case $(setxkbmap -query | grep "layout:" | awk '{print $2}') in
@@ -107,7 +112,7 @@ print_date(){
 }
 
 print_rec(){
-	[ -f /tmp/screencast ] && printf " ⏺️"
+	[ -f /tmp/screencast ] && printf " ⏺️🎙"
 }
 
 print_webcam(){
@@ -116,7 +121,7 @@ print_webcam(){
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_battery) | $(print_brightness) | $(print_volume) | $(print_internet) | $(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_volume) | $(print_cputemp) | $(print_internet) | $(print_date)"
 	sleep 60s
 done
 

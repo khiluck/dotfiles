@@ -25,7 +25,7 @@ xset s off
 xcompmgr &
 
 # set default brightness
-echo "70" | sudo tee /sys/class/backlight/amdgpu_bl0/brightness
+#echo "70" | sudo tee /sys/class/backlight/amdgpu_bl0/brightness
 
 # set wallpaper
 feh --bg-scale $(find ~/Pictures/*.jpg -type f | shuf -n 1)
