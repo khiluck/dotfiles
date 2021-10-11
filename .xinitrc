@@ -34,6 +34,9 @@ feh --bg-scale $(find ~/Pictures/*.jpg -type f | shuf -n 1)
 #[ -n $(lsusb | grep -i "unifying receiver") ]] && synclient TouchpadOff=1 || synclient TouchpadOff=0
 
 
+# clipmenu
+clipmenud &
+
 #autolock
 xss-lock -- /usr/local/bin/slock &
 

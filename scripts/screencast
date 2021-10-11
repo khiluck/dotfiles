@@ -1,8 +1,12 @@
 #!/bin/bash
 
+FILENAME=$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mkv
+
 start_screencast(){
 	touch /tmp/screencast && sleep 0.5s && refbar
-	ffmpeg -y -f x11grab -framerate 60 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f alsa -i default -c:v h264 -crf 0 -preset ultrafast -r 30 -c:a aac "$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4" &
+	echo $FILENAME > /tmp/screencast
+	xrandr -s 1920x1080 && sleep 2
+	ffmpeg -y -f x11grab -framerate 30 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f alsa -i default -c:v libx264 -crf 0 -preset ultrafast -r 30 -c:a aac "$FILENAME" &
 	echo $! > /tmp/recordingpid
 }
 
@@ -16,10 +20,20 @@ stop_screencast(){
     # even after SIGTERM, ffmpeg may still run, so SIGKILL it.
     sleep 3
     kill -9 "$recpid"
+	xrandr -s 1920x1200
 	exit
 }
 
 
+loop_refresh(){
+	while [ -f /tmp/screencast ]
+	do
+	  sleep 2 # or less like 0.2
+	  refbar
+	done
+}
+
+
 [ -f /tmp/screencast ] && stop_screencast 
-start_screencast
+start_screencast && loop_refresh
 

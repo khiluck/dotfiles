@@ -112,7 +112,12 @@ print_date(){
 }
 
 print_rec(){
-	[ -f /tmp/screencast ] && printf " ⏺️🎙"
+#	[ -f /tmp/screencast ] && printf " ⏺️🎙"
+	if [ -f /tmp/screencast ]; then 
+		PRINTVPATH="$(cat /tmp/screencast)"
+		PRINTVSIZE=$(echo "scale = 1 ; $(stat -c%s $PRINTVPATH) / 1024 / 1000" | bc)
+		printf "%sM ⏺️🎙" "$PRINTVSIZE"
+	fi
 }
 
 print_webcam(){
