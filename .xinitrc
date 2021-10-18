@@ -15,7 +15,7 @@ xset m 5 1
 xset s off
 
 #xrandr --output eDP --set TearFree on
-~/scripts/extmon
+#~/scripts/extmon
 
 
 
