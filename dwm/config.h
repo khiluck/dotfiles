@@ -100,6 +100,7 @@ static Key keys[] = {
 	{ WINKEY,						XK_grave,	spawn,			SHCMD("dmenuunicode") },
 	{ WINKEY,						XK_space,	spawn,			SHCMD("swlayout") },
 	{ MODKEY|ShiftMask,				XK_w,		spawn,			SHCMD("st -e sudo nmtui") },
+	{ MODKEY|ShiftMask,				XK_q,		spawn,			SHCMD("sysact") },
 	{ MODKEY,						XK_F9,		spawn,			SHCMD("dmenumount") },
 	{ MODKEY,						XK_F10,		spawn,			SHCMD("dmenuumount") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
@@ -140,7 +141,7 @@ static Key keys[] = {
 	TAGKEYS(                        XK_7,                      6)
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
-	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+/*	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },  */
 };
 
 /* button definitions */
