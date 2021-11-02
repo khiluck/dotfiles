@@ -97,6 +97,8 @@ static Key keys[] = {
 	{ WINKEY,		                XK_q,      spawn,          SHCMD("webcamtoggle") },
 	{ WINKEY,						XK_grave,	spawn,			SHCMD("dmenuunicode") },
 	{ WINKEY,						XK_space,	spawn,			SHCMD("swlayout") },
+	{ MODKEY,						XK_F9,		spawn,			SHCMD("dmenumount") },
+	{ MODKEY,						XK_F10,		spawn,			SHCMD("dmenuumount") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },

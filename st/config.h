@@ -6,8 +6,8 @@
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
 //static char *font = "Terminus (TTF):pixelsize=32:antialias=true:autohint=true";
-static char *font = "Monaco:pixelsize=19:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
-//static char *font = "Menlo:pixelsize=19:antialias=true:autohint=true";
+//static char *font = "Monaco:pixelsize=17:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
+static char *font = "Menlo:pixelsize=17:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
 static int borderpx = 2;
 
 /*
