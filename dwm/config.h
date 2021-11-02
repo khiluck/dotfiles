@@ -103,6 +103,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,				XK_q,		spawn,			SHCMD("sysact") },
 	{ MODKEY,						XK_F9,		spawn,			SHCMD("dmenumount") },
 	{ MODKEY,						XK_F10,		spawn,			SHCMD("dmenuumount") },
+	{ MODKEY,						XK_F11,		spawn,			SHCMD("dmenumountcifs") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
