@@ -42,6 +42,7 @@ static const Rule rules[] = {
 static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
+static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
@@ -95,8 +96,10 @@ static Key keys[] = {
 	{ WINKEY,		                XK_p,      spawn,          SHCMD("pass.sh") },
 	{ WINKEY,		                XK_w,      spawn,          SHCMD("screencast") },
 	{ WINKEY,		                XK_q,      spawn,          SHCMD("webcamtoggle") },
+	{ WINKEY,						XK_m,		spawn,			SHCMD("st -e sudo mc") },
 	{ WINKEY,						XK_grave,	spawn,			SHCMD("dmenuunicode") },
 	{ WINKEY,						XK_space,	spawn,			SHCMD("swlayout") },
+	{ MODKEY|ShiftMask,				XK_w,		spawn,			SHCMD("st -e sudo nmtui") },
 	{ MODKEY,						XK_F9,		spawn,			SHCMD("dmenumount") },
 	{ MODKEY,						XK_F10,		spawn,			SHCMD("dmenuumount") },
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
