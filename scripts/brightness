@@ -1,19 +1,22 @@
 #!/bin/bash
-bd=/sys/class/backlight/amdgpu_bl0/brightness
+#bd=/sys/class/backlight/amdgpu_bl0/brightness
 
-bdv=$(cat $bd)
+#bdv=$(cat $bd)
+#bdv=$(xbacklight)
 
 case $1 in
 	up)
-		echo $(( bdv + 10 )) > $bd
-		cat $bd
+#		echo $(( bdv + 10 )) > $bd
+		xbacklight -inc 10
+#		cat $bd
 	;;
 	down)
-		echo $(( bdv - 10 )) > $bd
-		cat $bd
+		#echo $(( bdv - 10 )) > $bd
+		xbacklight -dec 10
+#		cat $bd
 	;;
 	*)
-	echo "$bdv"
+#	echo "$bdv"
 esac
 
 refbar

@@ -41,7 +41,8 @@ print_hdd(){
 
 print_temp(){
 	PRINTTEMP=$(head -c 2 /sys/devices/platform/thinkpad_hwmon/hwmon/hwmon?/temp1_input)
-	printf "%s" "$PRINTTEMP"
+#	printf "%s" "$PRINTTEMP"
+	printf "🌡️%s℃" "$PRINTTEMP"
 #	sensors | awk '/temp1/ {print $2}' | cut -c2- | cut -f1 -d'.'
 }
 
@@ -49,7 +50,7 @@ print_temp(){
 print_internet(){
 	case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
 		down) wifiicon="❎ " ;;
-		up) wifiicon="$(nmcli | grep wlp4s0 | grep "connected to" | awk '{printf $4}') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
+		up) wifiicon="$(nmcli | grep wlp3s0 | grep "connected to" | awk '{printf $4}') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
 	esac
 
 	printf "%s%s%s\n" "$wifiicon" "$(sed "s/down/❎/;s/up/🌐/" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"
@@ -94,7 +95,8 @@ print_volume(){
 }
 
 print_brightness(){
-	brlevel="$(echo "scale = 2; $(cat /sys/class/backlight/amdgpu_bl0/brightness)/250*100" | bc | cut -f1 -d'.')"
+#	brlevel="$(echo "scale = 2; $(cat /sys/class/backlight/amdgpu_bl0/brightness)/250*100" | bc | cut -f1 -d'.')"
+	brlevel=$(xbacklight | cut -f1 -d'.')
 	if [ "$brlevel" -gt "50" ]; then
 		icon="🔆"
 	else
@@ -126,7 +128,7 @@ print_webcam(){
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_volume) | $(print_cputemp) | $(print_internet) | $(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_volume) | $(print_brightness) | $(print_temp) | $(print_battery) | $(print_internet) | $(print_date)"
 	sleep 60s
 done
 

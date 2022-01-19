@@ -1,4 +1,4 @@
-xrandr --auto
+xrandr --auto --set TearFree on
 
 # turn off beep
 xset -b
@@ -28,7 +28,8 @@ xcompmgr &
 #echo "70" | sudo tee /sys/class/backlight/amdgpu_bl0/brightness
 
 # set wallpaper
-feh --bg-scale $(find ~/Pictures/*.jpg -type f | shuf -n 1)
+feh --bg-scale $(find ~/Pictures/wallpapers/*.jpg -type f | shuf -n 1)
+#~/scripts/setbg &
 
 # check logitech mouse on startup, if connected - disable touchpad
 #[ -n $(lsusb | grep -i "unifying receiver") ]] && synclient TouchpadOff=1 || synclient TouchpadOff=0

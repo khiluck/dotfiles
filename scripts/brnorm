@@ -1,8 +1,10 @@
 #!/bin/bash
-bd=/sys/class/backlight/amdgpu_bl0/brightness
+#bd=/sys/class/backlight/amdgpu_bl0/brightness
 
-bdv=$(cat $bd)
+#bdv=$(cat $bd)
 
-echo $(( bdv = 70 )) > $bd
+#echo $(( bdv = 70 )) > $bd
+
+xbacklight -set 20
 
 refbar

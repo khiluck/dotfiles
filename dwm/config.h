@@ -8,10 +8,10 @@ static const int topbar             = 1;        /* 0 means bottom bar */
 /*static const char *fonts[]          = { "monospace:size=15" };
 static const char dmenufont[]       = "monospace:size=15";*/
 //static const char *fonts[]          = { "Monaco:pixelsize=19:antialias=true:autohint=true", "JoyPixels:pixelsize=19:antialias=true:autohint=true"};
-static const char *fonts[]          = { "SF Mono:pixelsize=19:antialias=true:autohint=true", "JoyPixels:pixelsize=19:antialias=true:autohint=true"};
+static const char *fonts[]          = { "SF Mono:pixelsize=24:antialias=true:autohint=true", "JoyPixels:pixelsize=24:antialias=true:autohint=true"};
 //static const char *fonts[]          = { "Menlo:pixelsize=19:antialias=true:autohint=true", "JoyPixels:pixelsize=19:antialias=true:autohint=true"};
 //static const char dmenufont[]       = "Monaco:pixelsize=19:antialias=true:autohint=true";
-static const char dmenufont[]       = "SF Mono:pixelsize=19:antialias=true:autohint=true";
+static const char dmenufont[]       = "SF Mono:pixelsize=24:antialias=true:autohint=true";
 //static const char dmenufont[]       = "Menlo:pixelsize=19:antialias=true:autohint=true";
 static const char col_gray1[]       = "#222222";
 static const char col_gray2[]       = "#444444";

@@ -18,7 +18,7 @@ PATH="$PATH:/home/aex/.local/bin"
 alias sudo='sudo '
 alias vi='vim'
 # fix remote ssh connections
-alias ssh='TERM=xterm ssh -lroot'
+alias ssh='TERM=xterm ssh'
 
 alias c='~/secret/connect.sh'
 alias r='~/secret/rdpconnect.sh'
