@@ -65,12 +65,28 @@ clrcyan='\e[1;36m'
 clrpurple='\e[1;35m'
 PS1="\[$clrcyan\]\u\[$clrwhite\]@\[$clrpurple\]\w\`if [ \$? = 0 ]; then echo -e '\[$clrgreen\]'; else echo -e '\[$clrred\]'; fi\`\\$ \[$clrreset\]"
 
+
 # generate password
+newpass()
+{
+PASSOK=0
+while [ $PASSOK -ne 1 ]; do
+    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c12)
+    PASSOK=1
+    # verify that there is at least one lower case letter
+    [ "${TEMPASS}" = "${TEMPASS^^}" ] && { PASSOK=0; } # echo "No lower case letter"; }
+    [ "${TEMPASS}" = "${TEMPASS,,}" ] && { PASSOK=0; } # echo "No upper case letter"; }
+    [ "${TEMPASS//[^0-9]/}" ] || { PASSOK=0; } # echo "No number"; }
+    [ "${TEMPASS//[^@\#$%_?^\!]/}" ] || { PASSOK=0; } # echo "No special symbol!"; }
+done
+echo $TEMPASS
+}
+
 pass()
 {
 	# generate password if no parameter was passed
-	[ $# -eq 0 ] &&	{ TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c12); echo $TEMPASS; echo $TEMPASS | xclip -r -l 1; echo $TEMPASS | xclip -selection clipboard; } || 
-{ TEMPASS=""; for i in $(eval echo {1..$1}); do echo $(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c12); done; }
+	[ $# -eq 0 ] &&	{ TEMPASS=$(newpass); echo $TEMPASS; echo $TEMPASS | xclip -r -l 1; echo $TEMPASS | xclip -selection clipboard; } || 
+{ TEMPASS=""; for i in $(eval echo {1..$1}); do echo $(newpass); done; }
 }
 
 
