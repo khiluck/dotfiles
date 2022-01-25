@@ -89,13 +89,12 @@ pass()
 { TEMPASS=""; for i in $(eval echo {1..$1}); do echo $(newpass); done; }
 }
 
-
 # rdp connection
 rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	xfreerdp /u:$2 /p:$3 /v:$1 /f /smart-sizing:1366x768 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z
+	xfreerdp /u:$2 /p:$3 /v:$1 /f /smart-sizing:1366x750 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z
 
 }
 
@@ -119,4 +118,10 @@ f(){
 update(){
 	sudo pacman -Syu
 	yay -Syu
+}
+
+
+# radio
+radio(){
+	mplayer -prefer-ipv4 http://us4.internet-radio.com:8258/stream
 }
