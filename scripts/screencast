@@ -5,7 +5,8 @@ FILENAME=$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4
 start_screencast(){
 	touch /tmp/screencast && sleep 0.5s && refbar
 	echo $FILENAME > /tmp/screencast
-	ffmpeg -y -f x11grab -framerate 10 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -i default -c:v h264 -crf 0 -preset ultrafast -r 10 -c:a aac "$FILENAME" &
+#	ffmpeg -y -f x11grab -framerate 10 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -i default -c:v h264 -crf 0 -preset ultrafast -r 10 -c:a aac "$FILENAME" &
+	ffmpeg -y -f x11grab -framerate 10 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -i alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00204429-00.analog-stereo -f pulse -i alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00204429-00.analog-stereo.monitor -filter_complex "[1][2]amerge=inputs=2[a]" -map 0:v -map "[a]" -ac 2 -c:v h264 -crf 0 -preset ultrafast -r 10 "$FILENAME" &
 	echo $! > /tmp/recordingpid
 }
 
