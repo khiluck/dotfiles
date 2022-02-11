@@ -50,10 +50,10 @@ print_temp(){
 print_internet(){
 	case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
 		down) wifiicon="❎ " ;;
-		up) wifiicon="$(nmcli | grep wlp3s0 | grep "connected to" | awk '{printf $4}') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "% " }' /proc/net/wireless)" ;;
+		up) wifiicon="$(nmcli | grep wlp3s0 | grep "connected to" | awk '{printf $4}') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "%" }' /proc/net/wireless)" ;;
 	esac
 
-	printf "%s%s%s\n" "$wifiicon" "$(sed "s/down/❎/;s/up/🌐/" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"
+	printf "%s%s%s\n" "$wifiicon" "$(sed "s/down//;s/up/🌐/" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/tun*/operstate 2>/dev/null)"
 }
 
 
@@ -109,8 +109,8 @@ print_brightness(){
 
 
 print_date(){
-	PRINTDATE=$(date "+%d-%b-%y | 🕙 %H:%M ")
-	printf "🗓️ %s" "$PRINTDATE"
+	PRINTDATE=$(date "+%a %d-%b|🕙 %H:%M ")
+	printf "🗓️%s" "$PRINTDATE"
 }
 
 print_rec(){
@@ -118,7 +118,7 @@ print_rec(){
 	if [ -f /tmp/screencast ]; then 
 		PRINTVPATH="$(cat /tmp/screencast)"
 		PRINTVSIZE=$(echo "scale = 1 ; $(stat -c%s $PRINTVPATH) / 1024 / 1000" | bc)
-		printf "%sM ⏺️🎙" "$PRINTVSIZE"
+		printf " %sM ⏺️" "$PRINTVSIZE"
 	fi
 }
 
@@ -128,7 +128,7 @@ print_webcam(){
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout) | $(print_volume) | $(print_brightness) | $(print_temp) | $(print_battery) | $(print_internet) | $(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_brightness)|$(print_battery)|$(print_internet)|$(print_date)"
 	sleep 60s
 done
 
