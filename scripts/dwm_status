@@ -49,7 +49,7 @@ print_temp(){
 
 print_internet(){
 	case "$(cat /sys/class/net/w*/operstate 2>/dev/null)" in
-		down) wifiicon="❎ " ;;
+		down) wifiicon="❎" ;;
 		up) wifiicon="$(nmcli | grep wlp3s0 | grep "connected to" | awk '{printf $4}') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "%" }' /proc/net/wireless)" ;;
 	esac
 
