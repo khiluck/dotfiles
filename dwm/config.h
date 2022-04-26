@@ -71,10 +71,10 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-static const char *termcmd[]  = { "st", NULL };
+static const char *termcmd[]  = { "st", "-e", NULL };
 
 static const char *urlcmd[] = { "clipmenu-url", NULL  };
-static const char *clipcmd[] = { "clipmenu", NULL  };
+static const char *clipcmd[] = { "clipmenu", "-i", "-fn", dmenufont, NULL  };
 
 static const char *cmdbrightnessup[]  = { "sudo", "brightness", "up", NULL };
 static const char *cmdbrightnessdown[]  = { "sudo", "brightness", "down", NULL };
@@ -82,6 +82,8 @@ static const char *cmdsoundup[]  = { "volumecontrol", "up", NULL };
 static const char *cmdsounddown[]  = { "volumecontrol", "down", NULL };
 static const char *cmdsoundtoggle[]  = { "volumecontrol", "mute", NULL };
 static const char *cmdlock[]  = { "slock", NULL };
+static const char *scrshot[] = { "flameshot", "gui", "-p", "/tmp", NULL };
+
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_Insert, spawn,          {.v = clipcmd } },
@@ -89,6 +91,7 @@ static Key keys[] = {
 	
 	{ MODKEY,                       XK_c,      spawn,          SHCMD("st -e connect.sh") },
 	{ MODKEY,                       XK_r,      spawn,          SHCMD("st -e rdpconnect.sh") },
+	{ MODKEY,                       XK_s,      spawn,          SHCMD("st -e sega.sh") },
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
 	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot") },
 	{ WINKEY,		                XK_c,      spawn,          SHCMD("galculator") },
@@ -108,6 +111,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ WINKEY,                       XK_l,      spawn,          {.v = cmdlock } },
+	{ 0,							XK_Print, 					spawn,			{.v = scrshot } },
 	{ 0,                            XF86MonBrightnessDown,     spawn,         {.v = cmdbrightnessdown } },
 	{ 0,                            XF86MonBrightnessUp,       spawn,         {.v = cmdbrightnessup } },
 	{ 0,                            XF86AudioMute,             spawn,          {.v = cmdsoundtoggle } },

@@ -1,4 +1,4 @@
-xrandr --auto --set TearFree on
+xrandr --auto
 
 # turn off beep
 xset -b
@@ -42,4 +42,4 @@ clipmenud &
 xss-lock -- /usr/local/bin/slock &
 
 
-exec dwm
+exec dbus-launch dwm
