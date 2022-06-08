@@ -1,7 +1,9 @@
 #!/bin/bash
 
-IN="eDP"
-EXT="HDMI-A-0"
+#IN="eDP"
+IN="LVDS1"
+#EXT="HDMI-A-0"
+EXT="DP1"
 
 if (xrandr | grep "$EXT connected"); then
     xrandr --output $IN --off --output $EXT --auto --set TearFree on

@@ -71,7 +71,7 @@ newpass()
 {
 PASSOK=0
 while [ $PASSOK -ne 1 ]; do
-    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c12)
+    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c8)
     PASSOK=1
     # verify that there is at least one lower case letter
     [ "${TEMPASS}" = "${TEMPASS^^}" ] && { PASSOK=0; } # echo "No lower case letter"; }
@@ -94,7 +94,8 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	xfreerdp /u:$2 /p:$3 /v:$1 /f /smart-sizing:1366x750 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z
+	#xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
+	xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
 
 }
 
@@ -123,5 +124,12 @@ update(){
 
 # radio
 radio(){
-	mplayer -prefer-ipv4 http://us4.internet-radio.com:8258/stream
+#	mplayer -prefer-ipv4 http://us4.internet-radio.com:8258/stream
+	mplayer -prefer-ipv4 http://airspectrum.cdnstream1.com:8018/1606_192
+}
+
+eval "$(mcfly init bash)"
+
+knock(){
+	nmap -Pn --host-timeout 100 --max-retries 0 -p $1 $2
 }

@@ -4,7 +4,7 @@ newpass()
 {
 PASSOK=0
 while [ $PASSOK -ne 1 ]; do
-    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c12)
+    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c8)
     PASSOK=1
     # verify that there is at least one lower case letter
     [ "${TEMPASS}" = "${TEMPASS^^}" ] && { PASSOK=0; } # echo "No lower case letter"; }

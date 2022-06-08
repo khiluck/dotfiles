@@ -15,6 +15,7 @@ print_cputemp() {
 print_layout() {
 	case $(setxkbmap -query | grep "layout:" | awk '{print $2}') in
 		"us") KBD="En" ;;
+		"de") KBD="De" ;;
 		"ru") KBD="Ru" ;;
 		"ua") KBD="Uk" ;;
 	esac

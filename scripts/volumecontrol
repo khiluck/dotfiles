@@ -2,10 +2,10 @@
 
 case $1 in
 	up)
-		amixer -q sset Master 5%+
+		amixer -q sset Master 4%+
 	;;
 	down)
-		amixer -q sset Master 5%-
+		amixer -q sset Master 4%-
 	;;
 	mute)
 		amixer -q sset Master toggle

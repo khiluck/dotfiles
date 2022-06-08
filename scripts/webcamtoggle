@@ -2,8 +2,8 @@
 
 start_webcam(){
 	touch /tmp/webcam && sleep 0.5s && refbar
-#	mpv --demuxer-lavf-o=video_size=640x360 av://v4l2:/dev/video0 --profile=low-latency --untimed --title=webcam --no-cache --no-osc --no-input-default-bindings
-	mpv --demuxer-lavf-o=video_size=1280x720 av://v4l2:/dev/video0 --profile=low-latency --untimed --title=webcam --no-cache --no-osc --no-input-default-bindings -vf hflip
+	#mpv --demuxer-lavf-o=video_size=640x360 av://v4l2:/dev/video1 --profile=low-latency --untimed --title=webcam --no-cache --no-osc --no-input-default-bindings -vf hflip
+	mpv --demuxer-lavf-o=video_size=640x480 av://v4l2:/dev/video1 --profile=low-latency --untimed --title=webcam --no-cache --no-osc --no-input-default-bindings -vf hflip
 }
 
 

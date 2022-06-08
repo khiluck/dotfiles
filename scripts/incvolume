@@ -1,0 +1,41 @@
+#!/usr/bin/sh
+
+usage ()
+{
+    printf "Usage : incvolume <input video file> <output video file>\n"
+    exit
+}
+
+# Tests for requirements
+#ifinstalled ffmpeg || { echo >&2 "We require 'ffmpeg' but it's not installed."; exit 1; }
+#ifinstalled sox || { echo >&2 "We require 'ffmpeg' but it's not installed."; exit 1; }
+
+if [ "$#" -ne 2 ]
+then
+  usage
+fi
+
+if [ ! -e "$1" ]
+then
+    printf "File not found: %s\n" "$1"
+    exit
+fi
+
+if [ -e "$2" ]
+then
+    printf "File %s already exists, overwrite? [y/N]\n: " "$2"
+    read -r yn
+    case $yn in
+        [Yy]* ) ;;
+        * ) exit;;
+    esac
+fi
+
+inBasename=$(basename "$1")
+inExt="${inBasename##*.}"
+
+printf "Increase volume on %s...\n" "$1"
+
+ffmpeg -v warning -y -i "$1" -filter:a "volume=2.0" -vcodec copy -qscale:v 0 -qscale:a 0 "$2"
+
+printf "Done"
