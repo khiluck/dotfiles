@@ -10,6 +10,9 @@ fi
 # Python PATH
 PATH="$PATH:/home/aex/.local/bin"
 
+
+PATH="$PATH:/home/aex/.local/share/gem/ruby/3.0.0/bin"
+
 # set aliases
 
 # alias mount office share
@@ -94,8 +97,8 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	#xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
-	xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
+	xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
+#	xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
 
 }
 
@@ -117,6 +120,7 @@ f(){
 
 # update all
 update(){
+	sudo pacman -Sy archlinux-keyring
 	sudo pacman -Syu
 	yay -Syu
 }
@@ -132,4 +136,10 @@ eval "$(mcfly init bash)"
 
 knock(){
 	nmap -Pn --host-timeout 100 --max-retries 0 -p $1 $2
+}
+
+#D2
+diablo2(){
+	cd /home/aex/.wine/drive_c/Program\ Files\ \(x86\)/Diablo\ II/
+	wine Diablo\ II.exe
 }
