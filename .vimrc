@@ -2,7 +2,7 @@
 syntax on
 " colors
 "colorscheme solarized
-colorscheme solas
+"colorscheme solas
 
 
 set nocompatible              " be iMproved, required
@@ -16,6 +16,18 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 " A Vim Plugin for Lively Previewing LaTeX PDF Output
 call vundle#end()
+
+
+
+" Colorscheme gruvbox
+Plugin 'morhetz/gruvbox'
+autocmd vimenter * ++nested colorscheme gruvbox
+set background=dark
+" transparent bg
+autocmd vimenter * hi Normal guibg=NONE ctermbg=NONE
+" For Vim<8, replace EndOfBuffer by NonText
+autocmd vimenter * hi EndOfBuffer guibg=NONE ctermbg=NONE
+
 
 
 
