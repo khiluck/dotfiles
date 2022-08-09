@@ -66,7 +66,33 @@ clrgreen='\e[1;32m'
 clrred='\e[1;31m'
 clrcyan='\e[1;36m'
 clrpurple='\e[1;35m'
-PS1="\[$clrcyan\]\u\[$clrwhite\]@\[$clrpurple\]\w\`if [ \$? = 0 ]; then echo -e '\[$clrgreen\]'; else echo -e '\[$clrred\]'; fi\`\\$ \[$clrreset\]"
+clryellow='\e[1;33m'
+
+
+__set_my_prompt() {
+   local git_modified_color="\[${clrgreen}\]"
+   local git_status=$(git status 2>/dev/null | grep "Your branch is ahead" 2>/dev/null)
+   if [ "$git_status" != "" ]
+   then
+       git_modified_color="\[${clryellow}\]"
+   fi
+   local git_status=$(git status --porcelain 2>/dev/null)
+   if [ "$git_status" != "" ]
+   then
+       git_modified_color="\[${clrred}\]"
+   fi
+
+   local git_branch=$(git branch --show-current 2>/dev/null)
+   if [ "$git_branch" != "" ];
+   then
+      git_branch="($git_modified_color$git_branch\[${clrgreen}\]) "
+   fi
+   PS1="\[$clrcyan\]\u\[$clrwhite\]@\[$clrpurple\]\w\`if [ \$? = 0 ]; then echo -e '\[$clrgreen\]'; else echo -e '\[$clrred\]'; fi\`\$\[$clrgreen\] $git_branch\[$clrreset\]"
+}
+PROMPT_COMMAND='__set_my_prompt'
+
+
+
 
 
 # generate password
@@ -141,5 +167,6 @@ knock(){
 #D2
 diablo2(){
 	cd /home/aex/.wine/drive_c/Program\ Files\ \(x86\)/Diablo\ II/
-	wine Diablo\ II.exe
+#	wine Diablo\ II.exe
+	wine Game.exe -3dfx -dxnocompatmodefix
 }
