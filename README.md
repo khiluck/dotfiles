@@ -1,2 +1,2 @@
 # dotfiles
-This is test
+This is test.
