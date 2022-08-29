@@ -1,5 +1,4 @@
-xrandr --auto 
-#xrandr --dpi 133
+xrandr --auto
 
 # turn off beep
 xset -b
@@ -38,11 +37,6 @@ feh --bg-scale $(find ~/Pictures/wallpapers/*.jpg -type f | shuf -n 1)
 
 # clipmenu
 clipmenud &
-
-
-# settings dpi
-echo "Xft.dpi: 133" | xrdb -override -
-
 
 #autolock
 xss-lock -- /usr/local/bin/slock &

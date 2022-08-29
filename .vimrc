@@ -6,8 +6,7 @@ syntax on
 
 
 set nocompatible              " be iMproved, required
-"filetype off                  " required
-filetype plugin on
+filetype off                  " required
 
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
@@ -18,10 +17,6 @@ Plugin 'VundleVim/Vundle.vim'
 " A Vim Plugin for Lively Previewing LaTeX PDF Output
 call vundle#end()
 
-
-" LanguageTool
-Plugin 'vim-scripts/LanguageTool'
-:let g:languagetool_jar='/home/aex/LanguageTool-5.8/languagetool-commandline.jar'
 
 
 " Colorscheme gruvbox
@@ -49,9 +44,6 @@ let python_highlight_all = 1
 " Включаем 256 цветов в терминале, мы ведь работаем из иксов?
 " Нужно во многих терминалах, например в gnome-terminal
 set t_Co=256
-
-" show a visual line under the cursor's current line
-set cursorline
 
 " Перед сохранением вырезаем пробелы на концах (только в .py файлах)
 autocmd BufWritePre *.py normal m`:%s/\s\+$//e ``
@@ -129,7 +121,7 @@ set incsearch
  
 " show line number
 " if not, specify [ set nonumber ]
-set number
+"set number
  
 " Visualize break ( $ ) or tab ( ^I )
 "set list
