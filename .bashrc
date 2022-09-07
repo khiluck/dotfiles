@@ -26,6 +26,10 @@ alias ssh='TERM=xterm ssh'
 alias c='~/secret/connect.sh'
 alias r='~/secret/rdpconnect.sh'
 
+# Add theme for markdown viewer
+alias litemdview='litemdview -t 1'
+
+
 # add color output
 alias ls='ls --color=auto -l --time-style long-iso'
 alias ll='ls --color=auto -la --time-style long-iso'
@@ -85,15 +89,12 @@ __set_my_prompt() {
    local git_branch=$(git branch --show-current 2>/dev/null)
    if [ "$git_branch" != "" ];
    then
-      git_branch="($git_modified_color$git_branch\[${clrgreen}\]) "
+      git_branch="($git_modified_color$git_branch\[${clrreset}\]) "
    fi
-   PS1="\[$clrcyan\]\u\[$clrwhite\]@\[$clrpurple\]\w\`if [ \$? = 0 ]; then echo -e '\[$clrgreen\]'; else echo -e '\[$clrred\]'; fi\`\$\[$clrgreen\] $git_branch\[$clrreset\]"
+   PS1="\[$clrcyan\]\u\[$clrwhite\]@\[$clrpurple\]\w\`if [ \$? = 0 ]; then echo -e '\[$clrgreen\]'; else echo -e '\[$clrred\]'; fi\`\$\[$clrreset\] $git_branch\[$clrreset\]"
+   [[ -z $VIRTUAL_ENV ]] || PS1="(`basename \"$VIRTUAL_ENV\"`) ${PS1-}"
 }
 PROMPT_COMMAND='__set_my_prompt'
-
-
-
-
 
 # generate password
 newpass()
@@ -170,3 +171,6 @@ diablo2(){
 #	wine Diablo\ II.exe
 	wine Game.exe -3dfx -dxnocompatmodefix
 }
+
+
+
