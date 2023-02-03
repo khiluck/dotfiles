@@ -37,7 +37,8 @@ done
 
 # If PORT variable is not empty, connect using -p option
 echo "Connecting to IP: [$IP];"
-$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar 
-
+#$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
+#$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /drive:Downloads,/home/aex/Downloads /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
+$(which xfreerdp) /u:$USERNAME /v:$IP /p:$PASSWORD /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /cert-ignore -smartcard +auto-reconnect +heartbeat +aero -z -themes +fonts -decorations +compression /bpp:16 /rfx /offscreen-cache /bitmap-cache /gfx +gfx-progressive /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /log-level:trace /multimon +multitransport /network:auto /video -floatbar > /dev/null
 
 

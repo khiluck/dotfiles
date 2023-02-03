@@ -1,6 +1,9 @@
 # if not running interactively, do not do anything
 [[ $- == *i* ]] || return
 
+# ChatGPT API Key
+export OPENAI_API_KEY=""
+
 # Set PATH
 if test -d "$HOME/scripts"
 then
@@ -9,7 +12,6 @@ fi
 
 # Python PATH
 PATH="$PATH:/home/aex/.local/bin"
-
 
 PATH="$PATH:/home/aex/.local/share/gem/ruby/3.0.0/bin"
 
@@ -25,10 +27,6 @@ alias ssh='TERM=xterm ssh'
 
 alias c='~/secret/connect.sh'
 alias r='~/secret/rdpconnect.sh'
-
-# Add theme for markdown viewer
-alias litemdview='litemdview -t 1'
-
 
 # add color output
 alias ls='ls --color=auto -l --time-style long-iso'
@@ -101,7 +99,7 @@ newpass()
 {
 PASSOK=0
 while [ $PASSOK -ne 1 ]; do
-    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c8)
+    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c12)
     PASSOK=1
     # verify that there is at least one lower case letter
     [ "${TEMPASS}" = "${TEMPASS^^}" ] && { PASSOK=0; } # echo "No lower case letter"; }
@@ -124,8 +122,9 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
+	#xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
 #	xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
+	$(which xfreerdp) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /cert-ignore -smartcard +auto-reconnect +heartbeat +aero -z -themes +fonts -decorations +compression /bpp:16 /rfx /offscreen-cache /bitmap-cache /gfx +gfx-progressive /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /log-level:trace /multimon +multitransport /network:auto /video -floatbar > /dev/null
 
 }
 
@@ -147,8 +146,10 @@ f(){
 
 # update all
 update(){
+	sudo pacman -Sc
 	sudo pacman -Sy archlinux-keyring
 	sudo pacman -Syu
+	yay -Sc
 	yay -Syu
 }
 
@@ -165,12 +166,14 @@ knock(){
 	nmap -Pn --host-timeout 100 --max-retries 0 -p $1 $2
 }
 
-#D2
-diablo2(){
-	cd /home/aex/.wine/drive_c/Program\ Files\ \(x86\)/Diablo\ II/
-#	wine Diablo\ II.exe
-	wine Game.exe -3dfx -dxnocompatmodefix
+# Create virtual environment for python
+venv(){
+	[[ -f $(which python$1) ]] || { echo "Python$1 is not installed!"; return 1; }
+	[[ -d .env ]] && { source ./.env/bin/activate; } || { python$1 -m venv .env; source ./.env/bin/activate; [[ -f requirements.txt ]] && pip install --upgrade pip; pip install -r requirements.txt; }
 }
 
 
-
+# Underrail
+underrail(){
+	STEAM_COMPAT_CLIENT_INSTALL_PATH=~/Games/underrail STEAM_COMPAT_DATA_PATH=~/Games/underrail "/home/aex/.local/share/Steam/steamapps/common/Proton - Experimental/proton" run "/home/aex/Games/underrail/pfx/drive_c/GOG Games/UnderRail/underrail.exe"
+}
