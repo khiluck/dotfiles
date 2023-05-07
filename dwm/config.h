@@ -28,7 +28,7 @@ static const char *colors[][3]      = {
 };
 
 /* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *tags[] = { "🕸️", "🔳", "🪟", "4", "5", "🙅", "📧", "📳", "💬" };
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -49,9 +49,9 @@ static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen win
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
+	{ "[M]",      monocle },
 	{ "[]=",      tile },    /* first entry is default */
 	{ "><>",      NULL },    /* no layout function means floating behavior */
-	{ "[M]",      monocle },
 };
 
 /* key definitions */
@@ -85,7 +85,7 @@ static const char *cmdsoundup[]  = { "volumecontrol", "up", NULL };
 static const char *cmdsounddown[]  = { "volumecontrol", "down", NULL };
 static const char *cmdsoundtoggle[]  = { "volumecontrol", "mute", NULL };
 static const char *cmdlock[]  = { "slock", NULL };
-static const char *scrshot[] = { "flameshot", "gui", "-p", "/tmp", NULL };
+static const char *scrshot[] = { "flameshot", "gui", "--clipboard", "-p", "/tmp", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
