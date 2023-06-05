@@ -1,8 +1,9 @@
 # if not running interactively, do not do anything
 [[ $- == *i* ]] || return
 
-# ChatGPT API Key
-export OPENAI_API_KEY=""
+# GPG2
+GPG_TTY=$(tty)
+export GPG_TTY
 
 # Set PATH
 if test -d "$HOME/scripts"
@@ -99,7 +100,7 @@ newpass()
 {
 PASSOK=0
 while [ $PASSOK -ne 1 ]; do
-    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c12)
+    TEMPASS=$(< /dev/urandom tr -dc a-hj-km-np-zA-HJ-KM-NP-Z2-9@\#$%_?^\! | head -c8)
     PASSOK=1
     # verify that there is at least one lower case letter
     [ "${TEMPASS}" = "${TEMPASS^^}" ] && { PASSOK=0; } # echo "No lower case letter"; }
@@ -110,7 +111,7 @@ done
 echo $TEMPASS
 }
 
-pass()
+oldpass()
 {
 	# generate password if no parameter was passed
 	[ $# -eq 0 ] &&	{ TEMPASS=$(newpass); echo $TEMPASS; echo $TEMPASS | xclip -r -l 1; echo $TEMPASS | xclip -selection clipboard; } || 
@@ -122,9 +123,7 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	#xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
-#	xfreerdp /u:$2 /p:$3 /v:$1 /drive:Downloads,/home/aex/Downloads /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
-	$(which xfreerdp) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /cert-ignore -smartcard +auto-reconnect +heartbeat +aero -z -themes +fonts -decorations +compression /bpp:16 /rfx /offscreen-cache /bitmap-cache /gfx +gfx-progressive /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /log-level:trace /multimon +multitransport /network:auto /video -floatbar > /dev/null
+	$(which xfreerdp) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /cert-ignore +auto-reconnect +heartbeat +aero -z -themes +fonts -decorations +compression /bpp:24 /offscreen-cache /bitmap-cache /gfx +gfx-progressive /rfx /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /network:auto /video
 
 }
 
@@ -156,11 +155,10 @@ update(){
 
 # radio
 radio(){
-#	mplayer -prefer-ipv4 http://us4.internet-radio.com:8258/stream
 	mplayer -prefer-ipv4 http://airspectrum.cdnstream1.com:8018/1606_192
 }
 
-eval "$(mcfly init bash)"
+#eval "$(mcfly init bash)"
 
 knock(){
 	nmap -Pn --host-timeout 100 --max-retries 0 -p $1 $2
@@ -174,6 +172,6 @@ venv(){
 
 
 # Underrail
-underrail(){
-	STEAM_COMPAT_CLIENT_INSTALL_PATH=~/Games/underrail STEAM_COMPAT_DATA_PATH=~/Games/underrail "/home/aex/.local/share/Steam/steamapps/common/Proton - Experimental/proton" run "/home/aex/Games/underrail/pfx/drive_c/GOG Games/UnderRail/underrail.exe"
-}
+#underrail(){
+#	STEAM_COMPAT_CLIENT_INSTALL_PATH=~/Games/underrail STEAM_COMPAT_DATA_PATH=~/Games/underrail "/home/aex/.local/share/Steam/steamapps/common/Proton - Experimental/proton" run "/home/aex/Games/underrail/pfx/drive_c/GOG Games/UnderRail/underrail.exe"
+#}
