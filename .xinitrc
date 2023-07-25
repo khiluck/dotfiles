@@ -1,4 +1,5 @@
-xrandr --auto
+xrandr --auto 
+#xrandr --dpi 133
 
 # turn off beep
 xset -b
@@ -17,7 +18,8 @@ xset s off
 #xrandr --output eDP --set TearFree on
 #~/scripts/extmon
 
-
+# Scroll speed
+#imwheel &
 
 ~/scripts/dwm_status &
 
@@ -38,8 +40,12 @@ feh --bg-scale $(find ~/Pictures/wallpapers/*.jpg -type f | shuf -n 1)
 # clipmenu
 clipmenud &
 
-#autolock
-xss-lock -- /usr/local/bin/slock &
 
+# settings dpi
+echo "Xft.dpi: 133" | xrdb -override -
+
+
+#autolock
+xss-lock -n 'setxkbmap us' -- /usr/local/bin/slock &
 
 exec dbus-launch dwm
