@@ -1,0 +1,2 @@
+#!/bin/bash
+pstree | grep "unison" | grep -v "grep" &> /dev/null || /usr/bin/unison

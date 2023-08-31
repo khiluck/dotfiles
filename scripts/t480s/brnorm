@@ -1,0 +1,12 @@
+#!/bin/bash
+#bd=/sys/class/backlight/amdgpu_bl0/brightness
+bd=/sys/devices/pci0000:00/0000:00:02.0/drm/card*/card*-eDP-1/intel_backlight/brightness
+
+bdv=$(cat $bd)
+
+echo $(( bdv = 600 )) > $bd
+
+
+#xbacklight -set 20
+
+refbar
