@@ -13,6 +13,7 @@ root = ssh://CloudSyncServer//home/Work
 #ignore = Name *.tmp
 ignore = Name .git
 ignore = Name .env
+ignore = Name .venv
 ignore = Name .terraform
 
 # Auto accept non-conflicting changes
