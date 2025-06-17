@@ -6,14 +6,25 @@ start_screencast(){
 	pacmd list-sinks | egrep '^\s+name: .*' | grep combined &> /dev/null || micplusspeakers.sh
 	touch /tmp/screencast && sleep 0.5s && refbar
 	echo $FILENAME > /tmp/screencast
-	#ffmpeg -y -f x11grab -probesize 17M -thread_queue_size 1024 -framerate 60 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -thread_queue_size 1024 -i recording.monitor -c:v h264 -crf 0 -preset ultrafast -r 30 -c:a aac "$FILENAME" &
-	#ffmpeg -y -f x11grab -probesize 17M -thread_queue_size 1024 -framerate 30 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -thread_queue_size 1024 -i recording.monitor -c:v h264 -crf 0 -preset ultrafast -r 30 -c:a aac -af "asendcmd=0.0 afftdn sn start,asendcmd=0.4 afftdn sn stop,afftdn=nr=20:nf=-40" "$FILENAME" &
-	ffmpeg -y -f x11grab -probesize 17M -thread_queue_size 1024 -framerate 30 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -thread_queue_size 1024 -i recording.monitor -c:v h264 -b:v 1500k -qmin 3 -qmax 8 -bufsize 4096 -mbd 2 -bf 2 -trellis 1 -flags +aic -cmp 2 -subcmp 2 -g 300 -crf 0 -preset ultrafast -r 30 -c:a aac -af "asendcmd=0.0 afftdn sn start,asendcmd=0.4 afftdn sn stop,afftdn=nr=20:nf=-40" "$FILENAME" &
+	ffmpeg -y -f x11grab -thread_queue_size 1024 -framerate 30 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -thread_queue_size 1024 -i recording.monitor -c:v libx264 -crf 21 -preset veryfast -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -af "afftdn=nr=12:nf=-20,highpass=f=80,lowpass=f=12000" "$FILENAME" &
+
 	echo $! > /tmp/recordingpid
 }
 
 
 stop_screencast(){
+	echo "🛑 Останавливаем loopback и виртуальные устройства (PipeWire/PulseAudio)..."
+	# Ищем активные модули loopback, null-sink и combine-sink
+	modules=$(pactl list short modules | grep -E 'module-loopback|module-null-sink|module-combine-sink' | cut -f1)
+	if [ -z "$modules" ]; then
+	  echo "✅ Нет активных модулей для выгрузки."
+	else
+	  for id in $modules; do
+		pactl unload-module "$id" && echo "🧹 Выгружен модуль ID $id"
+	  done
+	  echo "✅ Очистка завершена."
+	fi
+
 	rm -f /tmp/screencast && refbar
 	recpid="$(cat /tmp/recordingpid)"
     # kill with SIGTERM, allowing finishing touches.
