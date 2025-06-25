@@ -1,18 +1,24 @@
 #!/bin/bash
 #bd=/sys/class/backlight/amdgpu_bl0/brightness
+#bd=/sys/devices/pci0000:00/0000:00:02.0/drm/card*/card*-eDP-1/intel_backlight/brightness
+bd=/sys/class/backlight/intel_backlight/brightness
 
-#bdv=$(cat $bd)
+bdv=$(cat $bd)
 #bdv=$(xbacklight)
 
 case $1 in
 	up)
 #		echo $(( bdv + 10 )) > $bd
-		xbacklight -inc 10
+	#	sudo echo $(( bdv + 100 )) > $bd
+		echo $(( bdv + 100 )) | sudo tee $bd
+		#xbacklight -inc 10
 #		cat $bd
 	;;
 	down)
 		#echo $(( bdv - 10 )) > $bd
-		xbacklight -dec 10
+	#	sudo echo $(( bdv - 100 )) > $bd
+		echo $(( bdv - 100 )) | sudo tee $bd
+		#xbacklight -dec 10
 #		cat $bd
 	;;
 	*)

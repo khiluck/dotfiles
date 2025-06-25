@@ -11,18 +11,24 @@ then
 	PATH="$HOME/scripts:$PATH"
 fi
 
+# Default editor
+export EDITOR=nvim
+
 # Python PATH
 PATH="$PATH:/home/aex/.local/bin"
 
 PATH="$PATH:/home/aex/.local/share/gem/ruby/3.0.0/bin"
 
 # set aliases
+alias aicode="ollama run code_assistant:latest \"$1\""
+alias ai="ollama run llama3.1:latest \"$1\""
 
 # alias mount office share
 #alias share='sudo mount -t cifs -o username=guest,password=guest,uid=1000 //192.168.0.100/share /mnt/share/'
 
 alias sudo='sudo '
-alias vi='vim'
+alias vi='nvim'
+alias vim='nvim'
 # fix remote ssh connections
 alias ssh='TERM=xterm ssh'
 
@@ -123,13 +129,20 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	$(which xfreerdp) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /cert-ignore +auto-reconnect +heartbeat +aero -z -themes +fonts -decorations +compression /bpp:24 /offscreen-cache /bitmap-cache /gfx +gfx-progressive /rfx /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /network:auto /video
+	$(which xfreerdp3) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1920x1080 /cert:ignore +auto-reconnect +aero -themes +fonts -decorations /bpp:16 /gfx:avc444 /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /network:auto /video
+}
+
+rdpf()
+{
+	$(which xfreerdp3) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /cert:ignore +auto-reconnect +aero -themes +fonts -decorations /bpp:16 /gfx:avc444 /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /network:auto /video
 
 }
 
+
 # youtube music download
 dl(){
-	 youtube-dl -f bestaudio $1
+#	 youtube-dl -f bestaudio $1
+	 yt-dlp -f bestaudio $1
 
 }
 
@@ -145,11 +158,11 @@ f(){
 
 # update all
 update(){
-	sudo pacman -Sc
-	sudo pacman -Sy archlinux-keyring
-	sudo pacman -Syu
-	yay -Sc
-	yay -Syu
+	sudo pacman -Sc --noconfirm --noconfirm --needed
+	sudo pacman -Sy archlinux-keyring --noconfirm --needed
+	sudo pacman -Syu --noconfirm --needed
+	yay -Sc --noconfirm --needed
+	yay -Syu --noconfirm --needed
 }
 
 
@@ -175,3 +188,15 @@ venv(){
 #underrail(){
 #	STEAM_COMPAT_CLIENT_INSTALL_PATH=~/Games/underrail STEAM_COMPAT_DATA_PATH=~/Games/underrail "/home/aex/.local/share/Steam/steamapps/common/Proton - Experimental/proton" run "/home/aex/Games/underrail/pfx/drive_c/GOG Games/UnderRail/underrail.exe"
 #}
+
+# Start ssh-agent
+#eval "$(ssh-agent -s)"
+
+# Freeciv
+#freeciv(){
+#	LANG=ru_RU.utf-8 LANGUAGE=ru freeciv-gtk3
+#}
+
+whatismyip(){
+	curl -s https://icanhazip.com
+}

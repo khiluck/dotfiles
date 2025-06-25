@@ -26,6 +26,10 @@ xset s off
 # add transparency
 xcompmgr &
 
+# Notifications
+dunst &
+
+
 # set default brightness
 #echo "70" | sudo tee /sys/class/backlight/amdgpu_bl0/brightness
 

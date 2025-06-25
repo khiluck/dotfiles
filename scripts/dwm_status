@@ -49,9 +49,10 @@ print_temp(){
 
 
 print_internet(){
-	case "$(cat /sys/class/net/wlp3s*/operstate 2>/dev/null)" in
+	case "$(cat /sys/class/net/wlan*/operstate 2>/dev/null)" in
 		down) wifiicon="❎" ;;
-		up) wifiicon="$(nmcli | grep wlp3s0 | grep "connected to" | awk '{printf $4}') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "%" }' /proc/net/wireless)" ;;
+		#up) wifiicon="$(nmcli | grep wlan0 | grep "connected to" | awk '{printf $4}') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "%" }' /proc/net/wireless)" ;;
+		up) wifiicon="$(iwctl station wlan0 show | grep "Connected network" | awk '{ print substr ($3, 1, 7) }') $(awk '/^\s*w/ { print "📶", int($3 * 100 / 70) "%" }' /proc/net/wireless)" ;;
 	esac
 
 	printf "%s%s%s\n" "$wifiicon" "$(sed "s/down//;s/up/🌐/" /sys/class/net/e*/operstate 2>/dev/null)" "$(sed "s/.*/🔒/" /sys/class/net/wg-client*/operstate 2>/dev/null)"
@@ -73,6 +74,8 @@ print_battery(){
 		capacity=$(cat "$battery/capacity")
 		# Will make a warn variable if discharging and low
 		[ "$status" = "🔋" ] && [ "$capacity" -le 25 ] && warn="❗"
+		# Suspend if discharching lower then 5
+		[ "$status" = "🔋" ] && [ "$capacity" -le 5 ] && systemctl suspend
 		# Prints the info
 		printf "%s%s%d%%" "$status" "$warn" "$capacity"; unset warn
 	done && exit 0
@@ -96,8 +99,8 @@ print_volume(){
 }
 
 print_brightness(){
-#	brlevel="$(echo "scale = 2; $(cat /sys/class/backlight/amdgpu_bl0/brightness)/250*100" | bc | cut -f1 -d'.')"
-	brlevel=$(xbacklight | cut -f1 -d'.')
+	brlevel="$(echo "scale = 2; $(cat /sys/class/backlight/intel_backlight/brightness)/15" | bc | cut -f1 -d'.')"
+#	brlevel=$(xbacklight | cut -f1 -d'.')
 	if [ "$brlevel" -gt "50" ]; then
 		icon="🔆"
 	else
@@ -129,7 +132,7 @@ print_webcam(){
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_brightness)|$(print_battery)|$(print_internet)|$(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_internet)|$(print_date)"
 	sleep 60s
 done
 

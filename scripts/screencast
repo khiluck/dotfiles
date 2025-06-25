@@ -6,7 +6,7 @@ start_screencast(){
 	pacmd list-sinks | egrep '^\s+name: .*' | grep combined &> /dev/null || micplusspeakers.sh
 	touch /tmp/screencast && sleep 0.5s && refbar
 	echo $FILENAME > /tmp/screencast
-    ffmpeg -y -f x11grab -thread_queue_size 1024 -framerate 30 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -thread_queue_size 1024 -i recording.monitor -c:v libx264 -crf 21 -preset veryfast -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -af "afftdn=nr=8:nf=-30,highpass=f=40,lowpass=f=16000" "$FILENAME" &
+	ffmpeg -y -f x11grab -thread_queue_size 1024 -framerate 30 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -thread_queue_size 1024 -i recording.monitor -c:v libx264 -crf 21 -preset veryfast -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -af "afftdn=nr=8:nf=-30,highpass=f=40,lowpass=f=16000" "$FILENAME" &
 
 	echo $! > /tmp/recordingpid
 }

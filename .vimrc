@@ -3,24 +3,25 @@ syntax on
 " colors
 "colorscheme solarized
 "colorscheme solas
+colorscheme gruvbox
 
 
 set nocompatible              " be iMproved, required
 filetype off                  " required
 
 " set the runtime path to include Vundle and initialize
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
+"set rtp+=~/.vim/bundle/Vundle.vim
+"call vundle#begin()
 
 " let Vundle manage Vundle, required
-Plugin 'VundleVim/Vundle.vim'
+"Plugin 'VundleVim/Vundle.vim'
 " A Vim Plugin for Lively Previewing LaTeX PDF Output
-call vundle#end()
+"call vundle#end()
 
 
 
 " Colorscheme gruvbox
-Plugin 'morhetz/gruvbox'
+"Plugin 'morhetz/gruvbox'
 autocmd vimenter * ++nested colorscheme gruvbox
 set background=dark
 " transparent bg

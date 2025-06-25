@@ -1,0 +1,2 @@
+#!/bin/bash
+find . -type f -name "*.djvu" -exec sh -c 'sudo ddjvu -format=pdf -quality=85 -verbose "$0" "${0%.djvu}.pdf"' {} \;

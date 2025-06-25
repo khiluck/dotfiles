@@ -5,7 +5,7 @@
 [[ -f ~/.bashrc ]] && . ~/.bashrc
 
 # default editor
-export EDITOR="vim"
+export EDITOR="nvim"
 
 # Add script folder to PATH variable
 export PATH=$PATH:~/scripts
@@ -28,3 +28,4 @@ fi
 
 #echo Wait for 3 sec and shutdown...
 #sleep 3 && shutdown -P now
+. "$HOME/.cargo/env"

@@ -9,7 +9,7 @@ while IFS=' ' read -r connectionname ipaddress
 do
 	namearray+=("$connectionname")
 	iparray+=("$ipaddress")
-done < <(sort -k1 ~/secret/ip.list | grep "^[^#;]" | sed -e "s/[[:space:]]\+/ /g")
+done < <(sort -k1 ~/Work/secret/ip.list | grep "^[^#;]" | sed -e "s/[[:space:]]\+/ /g")
 
 
 if [[ -f $(which dmenu 2>/dev/null) ]]; then 
