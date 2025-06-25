@@ -5,11 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-//static char *font = "Terminus (TTF):pixelsize=32:antialias=true:autohint=true";
-//static char *font = "Monaco:pixelsize=24:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
-//static char *font = "Menlo:pixelsize=22:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
-static char *font = "JetBrains Mono:pixelsize=20:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
-//static char *font = "SF Mono:pixelsize=22:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
+static char *font = "JetBrains Mono:pixelsize=19:lcdfilter=lcddefault:hintstyle=hintnone:rgba=rgb:antialias=true:autohint=false";
 static int borderpx = 2;
 
 /*
@@ -97,90 +93,40 @@ char *termname = "st-256color";
  */
 unsigned int tabspaces = 8;
 
-/* bg opacity */
-//float alpha = 0.9;
-
-
-
-
-/* Terminal colors (16 first used in escape sequence) */
-//static const char *colorname[] = {
-
-  /* 8 normal colors */
-//  [0] = "#2e3436", /* black   */
-//  [1] = "#cc0000", /* red     */
-//  [2] = "#4e9a06", /* green   */
-//  [3] = "#c4a000", /* yellow  */
-//  [4] = "#3465a4", /* blue    */
-//  [5] = "#75507b", /* magenta */
-//  [6] = "#06989a", /* cyan    */
-//  [7] = "#d3d7cf", /* white   */
-
-  /* 8 bright colors */
-//  [8]  = "#555753", /* black   */
-//  [9]  = "#ef2929", /* red     */
-//  [10] = "#8ae234", /* green   */
-//  [11] = "#fce94f", /* yellow  */
-//  [12] = "#729fcf", /* blue    */
-//  [13] = "#ad7fa8", /* magenta */
-//  [14] = "#34e2e2", /* cyan    */
-//  [15] = "#eeeeec", /* white   */
-
-  /* special colors */
-//  [256] = "#2b2b2b", /* background */
-//  [257] = "#dedede", /* foreground */
-//};
-
-/*
- * Default colors (colorname index)
- * foreground, background, cursor
- */
-//unsigned int defaultfg = 257;
-//unsigned int defaultbg = 256;
-//unsigned int defaultcs = 257;
-//unsigned int defaultrcs = 257;
-
-
-
-
-
-
-
-
-
-
-
 
 /* bg opacity */
-float alpha = 0.85;
+float alpha = 0.9;
 float alphaOffset = 0.0;
 float alphaUnfocus;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
-	"#282828", /* hard contrast: #1d2021 / soft contrast: #32302f */
-	"#cc241d",
-	"#98971a",
-	"#d79921",
-	"#458588",
-	"#b16286",
-	"#689d6a",
-	"#a89984",
-	"#928374",
-	"#fb4934",
-	"#b8bb26",
-	"#fabd2f",
-	"#83a598",
-	"#d3869b",
-	"#8ec07c",
-	"#ebdbb2",
-	[255] = 0,
-	/* more colors can be added after 255 to use with DefaultXX */
-	"#add8e6", /* 256 -> cursor */
-	"#555555", /* 257 -> rev cursor*/
-	"#282828", /* 258 -> bg */
-	"#ebdbb2", /* 259 -> fg */
+        "#282828", /* hard contrast: #1d2021 / soft contrast: #32302f */
+        "#cc241d",
+        "#98971a",
+        "#d79921",
+        "#458588",
+        "#b16286",
+        "#689d6a",
+        "#a89984",
+        "#928374",
+        "#fb4934",
+        "#b8bb26",
+        "#fabd2f",
+        "#83a598",
+        "#d3869b",
+        "#8ec07c",
+        "#ebdbb2",
+        [255] = 0,
+        /* more colors can be added after 255 to use with DefaultXX */
+        "#add8e6", /* 256 -> cursor */
+        "#555555", /* 257 -> rev cursor*/
+        /* "#282828",*/ /* 258 -> bg */
+        "#383838", /* 258 -> bg */
+        "#ebdbb2", /* 259 -> fg */
 };
+
+
 
 
 /*
@@ -193,27 +139,8 @@ unsigned int defaultcs = 256;
 unsigned int defaultrcs = 257;
 unsigned int background = 258;
 
-
-
-
-
-
-
-
-
-
-
-
-
-/*
- * Colors used, when the specific fg == defaultfg. So in reverse mode this
- * will reverse too. Another logic would only make the simple feature too
- * complex.
- */
 static unsigned int defaultitalic = 7;
 static unsigned int defaultunderline = 7;
-
-
 
 
 /*
@@ -279,7 +206,7 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,              XK_Next,        zoom,           {.f = -1} },
 	{ TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
 	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
-	{ TERMMOD,              XK_v,           clippaste,      {.i =  0} },
+	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
 	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
