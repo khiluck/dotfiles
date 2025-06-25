@@ -5,8 +5,8 @@ static const unsigned int borderpx  = 3;        /* border pixel of windows */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
-static const char *fonts[]          = { "SF Mono:pixelsize=24:antialias=true:autohint=true", "JoyPixels:pixelsize=24:antialias=true:autohint=true" };
-static const char dmenufont[]       = "SF Mono:pixelsize=24:antialias=true:autohint=true";
+static const char *fonts[]          = { "SF Mono Powerline:pixelsize=24:antialias=true:autohint=true", "JoyPixels:pixelsize=24:antialias=true:autohint=true" };
+static const char dmenufont[]       = "SF Mono Powerline:pixelsize=24:antialias=true:autohint=true";
 static const char col_gray1[]       = "#282828";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#ebdbb2";
