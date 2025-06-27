@@ -1,5 +1,11 @@
-xrandr --auto 
+systemctl --user import-environment DISPLAY
+
 #xrandr --dpi 133
+xrandr --auto
+for out in $(xrandr | awk '/ connected/{print $1}'); do
+  xrandr --output "$out" --set TearFree on
+done
+
 
 # turn off beep
 xset -b
@@ -50,6 +56,14 @@ echo "Xft.dpi: 133" | xrdb -override -
 
 
 #autolock
-xss-lock -n 'setxkbmap us' -- /usr/local/bin/slock &
+#xss-lock -n 'setxkbmap us' -- /usr/local/bin/slock &
+xss-lock -- /usr/bin/slock &
+
+# 1280x720 = 720p X220
+hash fswebcam && fswebcam -q --no-banner -r 1280x720 ~/Pictures/login-photos/$(date +%Y-%m-%dT%H).jpg &
+
+
+#set de layout
+setxkbmap de
 
 exec dbus-launch dwm
