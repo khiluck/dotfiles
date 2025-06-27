@@ -66,4 +66,8 @@ hash fswebcam && fswebcam -q --no-banner -r 1280x720 ~/Pictures/login-photos/$(d
 #set de layout
 setxkbmap de
 
+
+#check for updates
+~/scripts/checkforupdates
+
 exec dbus-launch dwm

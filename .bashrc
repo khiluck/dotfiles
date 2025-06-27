@@ -163,6 +163,7 @@ update(){
 	sudo pacman -Syu --noconfirm --needed
 	yay -Sc --noconfirm --needed
 	yay -Syu --noconfirm --needed
+	rm -f /tmp/checkforupdates
 }
 
 

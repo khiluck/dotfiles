@@ -1,0 +1,17 @@
+#!/bin/bash
+	# 1) Check official repos
+	# checkupdates prints each upgradable package on its own line
+	official_count=$(checkupdates | wc -l || true)
+
+	# 2) Check AUR
+	# -Qua = query upgrades for AUR only
+	aur_count=$(yay -Qua --aur --noconfirm --nodiffmenu 2>/dev/null | wc -l || true)
+
+	# 3) Total updates
+	total=$((official_count + aur_count))
+
+	if (( total == 0 )); then
+		touch /tmp/checkforupdates
+	else
+		[ -f /tmp/checkforupdates ] && rm -f /tmp/checkforupdates
+	fi
