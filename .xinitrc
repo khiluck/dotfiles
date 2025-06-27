@@ -60,7 +60,7 @@ echo "Xft.dpi: 133" | xrdb -override -
 xss-lock -- /usr/bin/slock &
 
 # 1280x720 = 720p X220
-hash fswebcam && fswebcam -q --no-banner -r 1280x720 ~/Pictures/login-photos/$(date +%Y-%m-%dT%H).jpg &
+hash fswebcam && fswebcam -q --no-banner -S 50 -r 1280x720 ~/Pictures/login-photos/$(date +%Y-%m-%dT%H).jpg &
 
 
 #set de layout
@@ -69,5 +69,8 @@ setxkbmap de
 
 #check for updates
 ~/scripts/checkforupdates
+
+#what is my ip address
+~/scripts/whatismyip
 
 exec dbus-launch dwm

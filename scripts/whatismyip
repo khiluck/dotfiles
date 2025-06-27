@@ -1,0 +1,4 @@
+#!/bin/bash
+grep -q "scripts/whatismyip" /var/spool/cron/$USER || echo "*/1 * * * * ~/scripts/whatismyip" >> /var/spool/cron/$USER
+
+curl -s https://icanhazip.com > /tmp/myipaddress
