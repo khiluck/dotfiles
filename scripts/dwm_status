@@ -147,13 +147,16 @@ print_webcam(){
 }
 
 whatismyip(){
-    curl -s https://icanhazip.com
+	[ -f /tmp/myipaddress ] && printf "$(cat /tmp/myipaddress)"
 }
 
+checkforupdates(){
+	[ -f /tmp/checkforupdates ] && printf "📦"
+}
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_internet)|$(whatismyip)|$(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_internet)$(checkforupdates)|$(whatismyip)|$(print_date)"
 	sleep 60s
 done
 
