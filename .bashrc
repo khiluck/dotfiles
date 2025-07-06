@@ -158,6 +158,18 @@ f(){
 
 # update all
 update(){
+	# Remove all orphaned packages with pacman
+	sudo pacman -Rns --noconfirm --needed $(pacman -Qdtq)
+
+	# Remove all orphaned AUR packages with yay
+	yay -Yc --noconfirm --needed
+
+	# Clean the entire pacman package cache
+	sudo pacman -Scc --noconfirm --needed
+
+	# Clean yay’s package cache
+	yay -Sc --noconfirm --needed
+
 	sudo pacman -Sc --noconfirm --noconfirm --needed
 	sudo pacman -Sy archlinux-keyring --noconfirm --needed
 	sudo pacman -Syu --noconfirm --needed
