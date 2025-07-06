@@ -159,7 +159,7 @@ f(){
 # update all
 update(){
 	# Remove all orphaned packages with pacman
-	sudo pacman -Rns --noconfirm --needed $(pacman -Qdtq)
+	sudo pacman -Rns --noconfirm $(pacman -Qdtq)
 
 	# Remove all orphaned AUR packages with yay
 	yay -Yc --noconfirm --needed
