@@ -1,4 +1,6 @@
 [Default Applications]
+application/vnd.openxmlformats-officedocument.wordprocessingml.document=abiword.desktop
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet=gnumeric.desktop
 x-scheme-handler/tg=userapp-Telegram Desktop-UHJHG1.desktop
 x-scheme-handler/viber=viber.desktop
 x-scheme-handler/msteams=teams.desktop
