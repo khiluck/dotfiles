@@ -66,7 +66,7 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-static const char *termcmd[]  = { "st", NULL };
+static const char *termcmd[]  = { "alacritty", NULL };
 
 static const char *urlcmd[] = { "clipmenu-url", NULL  };
 static const char *clipcmd[] = { "clipmenu", "-i", "-fn", dmenufont, NULL  };
@@ -85,10 +85,10 @@ static const Key keys[] = {
         { MODKEY,                       XK_Insert, spawn,          {.v = clipcmd } },
         { MODKEY,                       XK_o,      spawn,          {.v = urlcmd } },
 
-        { MODKEY,                       XK_c,      spawn,          SHCMD("st -e connect.sh") },
-        { MODKEY,                       XK_r,      spawn,          SHCMD("st -e rdpconnect.sh") },
-        { MODKEY,                       XK_s,      spawn,          SHCMD("st -e sega.sh") },
-        { MODKEY|ShiftMask,             XK_x,      spawn,          SHCMD("st -e moonkill.sh") },
+        { MODKEY,                       XK_c,      spawn,          SHCMD("alacritty -e connect.sh") },
+        { MODKEY,                       XK_r,      spawn,          SHCMD("alacritty -e rdpconnect.sh") },
+        { MODKEY,                       XK_s,      spawn,          SHCMD("alacritty -e sega.sh") },
+        { MODKEY|ShiftMask,             XK_x,      spawn,          SHCMD("alacritty -e moonkill.sh") },
         { WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
         { WINKEY,                           XK_s,      spawn,          SHCMD("screenshot") },
         { WINKEY,                               XK_c,      spawn,          SHCMD("galculator") },
@@ -96,11 +96,12 @@ static const Key keys[] = {
         { WINKEY,                               XK_p,      spawn,          SHCMD("pass.sh") },
         { WINKEY,                               XK_w,      spawn,          SHCMD("screencast") },
         { WINKEY,                               XK_q,      spawn,          SHCMD("webcamtoggle") },
-        { WINKEY,                                               XK_m,           spawn,                        SHCMD("st -e sudo mc") },
+        { WINKEY,                                               XK_m,           spawn,                        SHCMD("alacritty -e sudo mc") },
         { WINKEY,                                               XK_grave,       spawn,                        SHCMD("dmenuunicode") },
+        { WINKEY,                                               XK_dead_circumflex,       spawn,                        SHCMD("dmenuunicode") },
         { WINKEY,                                               XK_space,       spawn,                        SHCMD("swlayout") },
         { MODKEY|ShiftMask,                             XK_w,           spawn,
-                SHCMD("st -e sudo nmtui") },
+                SHCMD("alacritty -e sudo nmtui") },
         { MODKEY|ShiftMask,                             XK_q,           spawn,
                 SHCMD("sysact") },
         { MODKEY,                                               XK_F9,          spawn,                        SHCMD("dmenumount") },
