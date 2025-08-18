@@ -1,52 +1,72 @@
 #!/bin/bash
 
-FILENAME=$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4
+set -euo pipefail
+
+FILENAME="$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4"
 
 start_screencast(){
-	pacmd list-sinks | egrep '^\s+name: .*' | grep combined &> /dev/null || micplusspeakers.sh
-	touch /tmp/screencast && sleep 0.5s && refbar
-	echo $FILENAME > /tmp/screencast
-	ffmpeg -y -f x11grab -thread_queue_size 1024 -framerate 30 -s "$(xdpyinfo | awk '/dimensions/ {print $2;}')" -i "$DISPLAY" -f pulse -thread_queue_size 1024 -i recording.monitor -c:v libx264 -crf 21 -preset veryfast -pix_fmt yuv420p -r 30 -c:a aac -b:a 128k -af "afftdn=nr=8:nf=-30,highpass=f=40,lowpass=f=16000" "$FILENAME" &
+  # гарантируем наличие виртуалки "recording"
+  pactl list short sinks | awk '{print $2}' | grep -qx recording || micplusspeakers.sh
 
-	echo $! > /tmp/recordingpid
-}
+  touch /tmp/screencast && sleep 0.5s && refbar
+  echo "$FILENAME" > /tmp/screencast
 
+  # Параметры видео/аудио
+  VIDEO_SIZE="$(xdpyinfo | awk '/dimensions/ {print $2;}')"
 
-stop_screencast(){
-	echo "🛑 Останавливаем loopback и виртуальные устройства (PipeWire/PulseAudio)..."
-	# Ищем активные модули loopback, null-sink и combine-sink
-	modules=$(pactl list short modules | grep -E 'module-loopback|module-null-sink|module-combine-sink' | cut -f1)
-	if [ -z "$modules" ]; then
-	  echo "✅ Нет активных модулей для выгрузки."
+  # Пытаемся аппаратно кодировать через VAAPI (AMD VCN) — разгрузит ЦП
+# Пытаемся аппаратно кодировать через VAAPI (AMD VCN)
+	if [ -e /dev/dri/renderD128 ] && ffmpeg -hide_banner -hwaccels 2>/dev/null | grep -qi vaapi; then
+	  VIDEO_CODEC=(-vaapi_device /dev/dri/renderD128 \
+	               -vf "format=nv12,hwupload" \
+    	           -c:v h264_vaapi -qp 21 -bf 2 -g 60 -r 30)
 	else
-	  for id in $modules; do
-		pactl unload-module "$id" && echo "🧹 Выгружен модуль ID $id"
-	  done
-	  echo "✅ Очистка завершена."
+	  VIDEO_CODEC=(-c:v libx264 -crf 21 -preset veryfast -pix_fmt yuv420p -r 30)
 	fi
 
-	rm -f /tmp/screencast && refbar
-	recpid="$(cat /tmp/recordingpid)"
-    # kill with SIGTERM, allowing finishing touches.
-    kill -15 "$recpid"
-    rm -f /tmp/recordingpid
-    # even after SIGTERM, ffmpeg may still run, so SIGKILL it.
-    sleep 3
-    kill -9 "$recpid"
-#	xrandr -s 1920x1200
-	exit
+  # Небольшие, но важные буферы + выравнивание аудио по времени
+  # Можно дополнительно попросить умеренную задержку у Pulse: PULSE_LATENCY_MSEC=60
+  PULSE_LATENCY_MSEC=60 ffmpeg -y \
+    -f x11grab -thread_queue_size 4096 -framerate 30 -s "$VIDEO_SIZE" -i "$DISPLAY" \
+    -f pulse   -thread_queue_size 4096 -i recording.monitor \
+    "${VIDEO_CODEC[@]}" \
+    -map 0:v:0 -map 1:a:0 \
+    -c:a aac -b:a 160k -ar 48000 -ac 2 \
+    -af "aresample=async=1:min_hard_comp=0.100:first_pts=0,highpass=f=40,lowpass=f=16000,afftdn=nr=8:nf=-30" \
+    -movflags +faststart \
+    "$FILENAME" &
+
+  echo $! > /tmp/recordingpid
 }
 
+stop_screencast(){
+  echo "🛑 Останавливаем loopback и виртуальные устройства (PipeWire/PulseAudio)..."
+  modules=$(pactl list short modules | grep -E 'module-loopback|module-null-sink|module-combine-sink' | cut -f1)
+  if [ -z "$modules" ]; then
+    echo "✅ Нет активных модулей для выгрузки."
+  else
+    for id in $modules; do
+      pactl unload-module "$id" && echo "🧹 Выгружен модуль ID $id"
+    done
+    echo "✅ Очистка завершена."
+  fi
+
+  rm -f /tmp/screencast && refbar
+  recpid="$(cat /tmp/recordingpid)"
+  kill -15 "$recpid" || true
+  rm -f /tmp/recordingpid
+  sleep 3
+  kill -9 "$recpid" 2>/dev/null || true
+  exit
+}
 
 loop_refresh(){
-	while [ -f /tmp/screencast ]
-	do
-	  sleep 2 # or less like 0.2
-	  refbar
-	done
+  while [ -f /tmp/screencast ]; do
+    sleep 2
+    refbar
+  done
 }
 
-
-[ -f /tmp/screencast ] && stop_screencast 
+[ -f /tmp/screencast ] && stop_screencast
 start_screencast && loop_refresh
 

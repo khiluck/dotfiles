@@ -1,27 +1,27 @@
 #!/bin/bash
+set -euo pipefail
 
-# Устройства (замените при необходимости)
+# 👉 Подставь свои точные имена (pactl list short sources/sinks)
 MIC_SOURCE="alsa_input.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00204429-00.analog-stereo"
 SPEAKER_SINK="alsa_output.usb-Creative_Technology_Ltd_Sound_Blaster_Play__3_00204429-00.analog-stereo"
 
-# Удаляем любые loopback-модули, где микрофон направлен в динамики
-pactl list modules short | grep "module-loopback" | grep "$MIC_SOURCE" | grep "$SPEAKER_SINK" | cut -f1 | while read -r id; do
-  pactl unload-module "$id" && echo "❌ Удалён loopback микрофона в динамики (эхо)"
-done
+# Чистим возможные старые модули, чтобы не плодить дубликаты
+pactl list short modules | awk '/module-(loopback|null-sink|combine-sink)/{print $1}' | xargs -r -n1 pactl unload-module
 
-# Загружаем null sink (виртуальный выход для записи)
-pactl load-module module-null-sink sink_name=recording sink_properties=device.description=recording
+# 1) Виртуальный выход для записи
+pactl load-module module-null-sink sink_name=recording sink_properties=device.description=recording >/dev/null
 
-# Объединяем null-sink и реальные динамики в combined sink
-pactl load-module module-combine-sink sink_name=combined sink_properties=device.description=combined slaves=recording,$SPEAKER_SINK
+# 2) Системный звук → в запись (берём monitor реального выхода)
+pactl load-module module-loopback source="${SPEAKER_SINK}.monitor" sink=recording latency_msec=60 >/dev/null
 
-# Микрофон → recording (для записи)
-pactl load-module module-loopback source=$MIC_SOURCE sink=recording latency_msec=1
+# 3) Микрофон → в запись
+pactl load-module module-loopback source="$MIC_SOURCE" sink=recording latency_msec=60 >/dev/null
 
-# Микрофон → динамики (для прослушивания). Чтоб слышать самого себя
-#pactl load-module module-loopback source=$MIC_SOURCE sink=$SPEAKER_SINK latency_msec=1
+# 4) (опционально) Самопрослушка микрофона в колонки — если нужно слышать себя
+# pactl load-module module-loopback source="$MIC_SOURCE" sink="$SPEAKER_SINK" latency_msec=120 >/dev/null
 
-# Устанавливаем combined как устройство вывода по умолчанию
-pactl set-default-sink combined
+# По умолчанию вывод оставляем реальным колонкам (НЕ combined)
+pactl set-default-sink "$SPEAKER_SINK"
 
-echo "🎤 Скрипт выполнен. Микрофон пишется и слышен. Используется PipeWire (через pactl)."
+echo "🎧 ${SPEAKER_SINK}.monitor + 🎤 $MIC_SOURCE → [recording]; latency ≈ 60 ms. Готово."
+
