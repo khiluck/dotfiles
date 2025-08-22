@@ -1,5 +1,5 @@
 #!/bin/bash
 sleep 0.2
 #import png:- | xclip -selection c -t image/png
-export filename=/tmp/screenshot-$(date +%F_%T).png; import png:$filename ;xclip -selection clipboard -target image/png -filter < $filename &>/dev/null
-
+#export filename=/tmp/screenshot-$(date +%F_%T).png; import png:$filename ;xclip -selection clipboard -target image/png -filter < $filename &>/dev/null
+outfile="/tmp/screenshot-$(date +%F_%H-%M-%S).png"; maim -s -f png -u | GDK_SCALE=2 GDK_DPI_SCALE=0.75 satty --filename - --output-filename "$outfile" --actions-on-escape "save-to-clipboard,save-to-file,exit" --actions-on-enter "save-to-clipboard,save-to-file,exit" --copy-command "xclip -selection clipboard -t image/png -i"; echo "$outfile"
