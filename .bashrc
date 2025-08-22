@@ -26,6 +26,9 @@ alias ai="ollama run llama3.1:latest \"$1\""
 # alias mount office share
 #alias share='sudo mount -t cifs -o username=guest,password=guest,uid=1000 //192.168.0.100/share /mnt/share/'
 
+alias wifi='impala'
+alias bt='blueberry'
+
 alias sudo='sudo '
 alias vi='nvim'
 alias vim='nvim'
