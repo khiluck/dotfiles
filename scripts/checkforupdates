@@ -13,7 +13,7 @@ aur_count=$(yay -Qua --aur --noconfirm --nodiffmenu 2>/dev/null | wc -l || true)
 total=$((official_count + aur_count))
 
 if (( total != 0 )); then
-	touch /tmp/checkforupdates
+	echo $total > /tmp/checkforupdates 
 else
 	[ -f /tmp/checkforupdates ] && rm -f /tmp/checkforupdates
 fi

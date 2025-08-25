@@ -74,8 +74,6 @@ print_battery(){
 		capacity=$(cat "$battery/capacity")
 		# Will make a warn variable if discharging and low
 		[ "$status" = "🔋" ] && [ "$capacity" -le 25 ] && warn="❗"
-		# Suspend if discharching lower then 5
-		[ "$status" = "🔋" ] && [ "$capacity" -le 5 ] && systemctl suspend
 		# Prints the info
 		printf "%s%s%d%%" "$status" "$warn" "$capacity"; unset warn
 	done && exit 0
@@ -110,26 +108,12 @@ print_brightness(){
 	printf "%s%s%%" "$icon" "$brlevel"
 }
 
-
+checkforupdates(){
+	[ -f /tmp/checkforupdates ] && printf "📦 $(cat /tmp/checkforupdates)" 
+}
 
 print_date(){
-	clock=$(date '+%I')
-	case "$clock" in
-		"00") icon="🕛" ;;
-		"01") icon="🕐" ;;
-		"02") icon="🕑" ;;
-		"03") icon="🕒" ;;
-		"04") icon="🕓" ;;
-		"05") icon="🕔" ;;
-		"06") icon="🕕" ;;
-		"07") icon="🕖" ;;
-		"08") icon="🕗" ;;
-		"09") icon="🕘" ;;
-		"10") icon="🕙" ;;
-		"11") icon="🕚" ;;
-		"12") icon="🕛" ;;
-	esac
-	PRINTDATE=$(date "+%a %d-%b|$icon %H:%M ")
+	PRINTDATE=$(date "+%a %d-%b|🕙 %H:%M ")
 	printf "🗓️%s" "$PRINTDATE"
 }
 
@@ -142,21 +126,17 @@ print_rec(){
 	fi
 }
 
-print_webcam(){
-	[ -f /tmp/webcam ] && printf " 📸"
-}
-
 whatismyip(){
 	[ -f /tmp/myipaddress ] && printf "$(cat /tmp/myipaddress)"
 }
 
-checkforupdates(){
-	[ -f /tmp/checkforupdates ] && printf "📦"
+print_webcam(){
+	[ -f /tmp/webcam ] && printf " 📸"
 }
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_internet)$(checkforupdates)|$(whatismyip)|$(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_brightness)|$(print_battery)|$(print_internet)$(checkforupdates)|$(whatismyip)|$(print_date)"
 	sleep 60s
 done
 
