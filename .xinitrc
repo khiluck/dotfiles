@@ -17,9 +17,13 @@ xset r rate 200 20
 #setxkbmap -model thinkpad -layout us,ru -option "grp:win_space_toggle"
 xset m 5 1
 
-# turn off display energy save mode
-#xset -dpms
+# Turn off screensaver, use DPMS instead
 xset s off
+# Включить энергосбережение монитора и настроить таймауты DPMS
+# standby 5 мин, suspend 10 мин, off 10 мин (пример)
+xset +dpms
+xset dpms 300 600 600
+
 
 #xrandr --output eDP --set TearFree on
 #~/scripts/extmon
@@ -55,22 +59,12 @@ clipmenud &
 echo "Xft.dpi: 133" | xrdb -override -
 
 
-#autolock
-#xss-lock -n 'setxkbmap us' -- /usr/local/bin/slock &
-xss-lock -- /usr/bin/slock &
+# Запускать slock при срабатывании screensaver/DPMS и при усыплении
+# (transfer-sleep-lock — чтобы блокировка ставилась при suspend)
+xss-lock --transfer-sleep-lock -- sh -c 'setxkbmap us && exec /usr/local/bin/slock' &
+
 
 # 1280x720 = 720p X220
 hash fswebcam && fswebcam -q --no-banner -S 50 -r 1280x720 ~/Pictures/login-photos/$(date +%Y-%m-%dT%H).jpg &
-
-
-#set de layout
-setxkbmap de
-
-
-#check for updates
-~/scripts/checkforupdates
-
-#what is my ip address
-~/scripts/whatismyip
 
 exec dbus-launch dwm
