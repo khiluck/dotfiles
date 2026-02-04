@@ -19,7 +19,7 @@ static int borderpx = 2;
 static char *shell = "/bin/sh";
 char *utmp = NULL;
 /* scroll program: to enable use a string like "scroll" */
-char *scroll = "scroll";
+char *scroll = NULL;
 char *stty_args = "stty raw pass8 nl -echo -iexten -cstopb 38400";
 
 /* identification sequence returned in DA and DECID */
@@ -28,6 +28,9 @@ char *vtiden = "\033[?6c";
 /* Kerning / character bounding-box multipliers */
 static float cwscale = 1.0;
 static float chscale = 1.0;
+
+/* The amount of lines scrollback can hold before it wraps around. */
+unsigned int scrollback_lines = 5000;
 
 /*
  * word delimiter string
@@ -53,7 +56,7 @@ int allowwindowops = 1;
  * near minlatency, but it waits longer for slow updates to avoid partial draw.
  * low minlatency will tear/flicker more, as it can "detect" idle too early.
  */
-static double minlatency = 8;
+static double minlatency = 2;
 static double maxlatency = 33;
 
 /*
@@ -93,40 +96,38 @@ char *termname = "st-256color";
  */
 unsigned int tabspaces = 8;
 
-
 /* bg opacity */
 float alpha = 0.9;
 float alphaOffset = 0.0;
 float alphaUnfocus;
 
+
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
-        "#282828", /* hard contrast: #1d2021 / soft contrast: #32302f */
-        "#cc241d",
-        "#98971a",
-        "#d79921",
-        "#458588",
-        "#b16286",
-        "#689d6a",
-        "#a89984",
-        "#928374",
-        "#fb4934",
-        "#b8bb26",
-        "#fabd2f",
-        "#83a598",
-        "#d3869b",
-        "#8ec07c",
-        "#ebdbb2",
-        [255] = 0,
-        /* more colors can be added after 255 to use with DefaultXX */
-        "#add8e6", /* 256 -> cursor */
-        "#555555", /* 257 -> rev cursor*/
-        /* "#282828",*/ /* 258 -> bg */
-        "#383838", /* 258 -> bg */
-        "#ebdbb2", /* 259 -> fg */
+    "#282828", /* hard contrast: #1d2021 / soft contrast: #32302f */
+    "#cc241d",
+    "#98971a",
+    "#d79921",
+    "#458588",
+    "#b16286",
+    "#689d6a",
+    "#a89984",
+    "#928374",
+    "#fb4934",
+    "#b8bb26",
+    "#fabd2f",
+    "#83a598",
+    "#d3869b",
+    "#8ec07c",
+    "#ebdbb2",
+    [255] = 0,
+    /* more colors can be added after 255 to use with DefaultXX */
+    "#add8e6", /* 256 -> cursor */
+    "#555555", /* 257 -> rev cursor*/
+    /* "#282828",*/ /* 258 -> bg */
+    "#383838", /* 258 -> bg */
+    "#ebdbb2", /* 259 -> fg */
 };
-
-
 
 
 /*
@@ -138,9 +139,6 @@ unsigned int defaultbg = 258;
 unsigned int defaultcs = 256;
 unsigned int defaultrcs = 257;
 unsigned int background = 258;
-
-static unsigned int defaultitalic = 7;
-static unsigned int defaultunderline = 7;
 
 
 /*
@@ -185,7 +183,7 @@ static uint forcemousemod = ShiftMask;
  */
 static MouseShortcut mshortcuts[] = {
 	/* mask                 button   function        argument       release */
-	{ XK_ANY_MOD,           Button3, selpaste,       {.i = 0},      1 },
+	{ XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
 	{ ShiftMask,            Button4, ttysend,        {.s = "\033[5;2~"} },
 	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
 	{ ShiftMask,            Button5, ttysend,        {.s = "\033[6;2~"} },
