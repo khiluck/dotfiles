@@ -1,6 +1,7 @@
 #!/bin/bash
 export TERM=xterm
-clear
+# clear только если запущены в терминале (хоткеем из dwm терминала нет)
+[[ -t 1 ]] && clear
 
 
 namearray=() 
@@ -13,7 +14,7 @@ done < <(sort -k1 ~/Work/secret/ip.list | grep "^[^#;]" | sed -e "s/[[:space:]]\
 
 
 if [[ -f $(which dmenu 2>/dev/null) ]]; then 
-	choice=$(printf "%s\n" "${namearray[@]}" | dmenu -i -l 30 | sed "s/ .*//")
+	choice=$(printf "%s\n" "${namearray[@]}" | dmenu -i -l 15 -p "ssh:" | sed "s/ .*//")
 else
 	echo "Please select server:"
 	echo "(Ctrl+c for exit)"
@@ -24,6 +25,9 @@ else
 	done
 fi
 
+# Escape в меню — просто выходим, ничего не открывая
+[[ -z $choice ]] && exit 0
+
 
 for ((a=0; a < ${#namearray[*]}; a++))
 do
@@ -33,7 +37,16 @@ do
 done
 
 
+[[ -z $IP ]] && { echo "No IP found for [$choice]" >&2; exit 1; }
+
+# Если терминала нет (запуск хоткеем из dwm) — открываем ssh в новом окне st,
+# чтобы меню не висело поверх пустого полноэкранного терминала.
+if [[ ! -t 1 ]]; then
+	[[ -z $PORT ]] || exec st -e ssh -lroot "$IP" -p "$PORT"
+	exec st -e ssh -X -lroot "$IP"
+fi
+
 # If PORT variable is not empty, connect using -p option
-[[ -z $PORT ]] || { echo "Connecting to IP: [$IP]; Port: [$PORT]"; $(which ssh) -lroot $IP -p $PORT; exit; }
+[[ -z $PORT ]] || { echo "Connecting to IP: [$IP]; Port: [$PORT]"; exec ssh -lroot "$IP" -p "$PORT"; }
 echo "Connecting to IP: [$IP];"
-$(which ssh) -X -lroot $IP
+exec ssh -X -lroot "$IP"

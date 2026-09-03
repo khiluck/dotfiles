@@ -1,5 +1,6 @@
 #!/bin/bash
-clear
+# clear только если запущены в терминале (хоткеем из dwm терминала нет)
+[[ -t 1 ]] && clear
 #gpg --batch --yes -d -o $HOME/secret/rdp.list $HOME/secret/rdp.list.gpg || exit 1
 
 namearray=()
@@ -15,7 +16,7 @@ done < <(sort -k1 ~/Work/secret/rdp.list | grep "^[^#;]" | sed -e "s/[[:space:]]
 
 
 if [[ -f $(which dmenu 2>/dev/null) ]]; then
-    choice=$(printf "%s\n" "${namearray[@]}" | dmenu -i -l 30 | sed "s/ .*//")
+    choice=$(printf "%s\n" "${namearray[@]}" | dmenu -i -l 15 -p "rdp:" | sed "s/ .*//")
 else
 	echo "Please select server:"
 	echo "(Ctrl+c for exit)"
@@ -26,6 +27,9 @@ else
 	done
 fi
 
+# Escape в меню — просто выходим, ничего не открывая
+[[ -z $choice ]] && exit 0
+
 
 for ((a=0; a < ${#namearray[*]}; a++))
 do
@@ -35,7 +39,8 @@ do
 done
 
 
-# If PORT variable is not empty, connect using -p option
+[[ -z $IP ]] && { echo "No IP found for [$choice]" >&2; exit 1; }
+
 echo "Connecting to IP: [$IP];"
 #$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1600x850 /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
 #$(which xfreerdp) /u:$USERNAME /p:$PASSWORD /v:$IP /drive:Downloads,/home/aex/Downloads /f /sound:sys:pulse /network:auto /fonts /cert:ignore +auto-reconnect +heartbeat +aero -z -window-drag -menu-anims -themes +fonts -decorations +compression /audio-mode:0 /mic:format:1 /sound:latency:50 -floatbar
