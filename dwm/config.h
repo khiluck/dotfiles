@@ -38,6 +38,9 @@ static const Rule rules[] = {
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
 	{ "Galculator",     NULL,       NULL,       0,            1,           -1 },
+	/* flameshot: не тайлить оверлей, иначе dwm сдвинет его вниз на высоту бара.
+	 * Полноэкранным его делает screenshot-draw через _NET_WM_STATE_FULLSCREEN. */
+	{ "flameshot",      NULL,       NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 

@@ -14,7 +14,19 @@ out="/tmp/screenshot-$(date +%F_%H-%M-%S).png"
 tmp=$(mktemp /tmp/flameshot-XXXXXXXX.png) || exit 1
 trap 'rm -f "$tmp"' EXIT INT TERM
 
-flameshot gui --raw > "$tmp" 2>/dev/null
+flameshot gui --raw > "$tmp" 2>/dev/null &
+fs=$!
+
+# Оверлей растягиваем на весь экран, включая полосу бара. Без этого dwm тайлит
+# окно и сдвигает его вниз на высоту бара (в manage(): c->y = MAX(c->y, m->wy)),
+# из-за чего нижние ~31 px оверлея уходят за край экрана и до них не добраться.
+for id in $(timeout 5 xdotool search --sync --onlyvisible --class flameshot 2>/dev/null); do
+	WIDTH=0
+	eval "$(xdotool getwindowgeometry --shell "$id" 2>/dev/null)"
+	[ "$WIDTH" -gt 200 ] && xdotool windowstate --add FULLSCREEN "$id"
+done
+
+wait "$fs"
 
 # пустой файл = отмена (Escape или закрытие без выделения)
 [ -s "$tmp" ] || exit 0
