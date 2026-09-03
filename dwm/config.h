@@ -86,14 +86,23 @@ static const char *cmdsoundup[]  = { "volumecontrol", "up", NULL };
 static const char *cmdsounddown[]  = { "volumecontrol", "down", NULL };
 static const char *cmdsoundtoggle[]  = { "volumecontrol", "mute", NULL };
 static const char *cmdlock[]  = { "slock", NULL };
-static const char *cmdchatgpt[]  = { "chromium", "--new-window", "--app=https://chatgpt.com/", "--name=ChatGPT", "--profile-directory=Profile 1", NULL };
-// static const char *scrshot[] = { "flameshot", "gui", "--clipboard", "-p", "/tmp", NULL };
+static const char *cmdbreaknow[]   = { "pauzer", "-b", NULL };
+static const char *cmdbreaktoggle[]= { "pauzer", "-p", NULL };
+static const char *cmdbreakreset[] = { "pauzer", "-r", NULL };
+static const char *cmdchatgpt[]  = { "chromium", "--new-window", "--app=https://chatgpt.com/", "--name=ChatGPT", "--profile-directory=Profile 3", NULL };
+static const char *cmdelement[]  = { "chromium", "--new-window", "--app=https://app.element.io/", "--name=Element", "--profile-directory=Profile 3", NULL };
+static const char *cmdtelegram[]  = { "chromium", "--new-window", "--app=https://web.telegram.org/", "--name=Telegram", "--profile-directory=Profile 3", NULL };
+//static const char *cmdspotify[]  = { "chromium", "--new-window", "--app=https://open.spotify.com/", "--name=Spotify", "--profile-directory=Profile 5", NULL };
+//static const char *scrshot[] = { "flameshot", "gui", "--clipboard", "-p", "/tmp", NULL };
 
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_Insert, spawn,          {.v = clipcmd } },
 	{ MODKEY,                       XK_o,      spawn,          {.v = urlcmd } },
 	{ WINKEY,                       XK_a,      spawn,          {.v = cmdchatgpt } },
+	{ WINKEY,                       XK_e,      spawn,          {.v = cmdelement } },
+	{ WINKEY,                       XK_t,      spawn,          {.v = cmdtelegram } },
+//	{ WINKEY,                       XK_p,      spawn,          {.v = cmdspotify } },
 	{ MODKEY,                       XK_c,      spawn,          SHCMD("st -e connect.sh") },
 	{ MODKEY,                       XK_r,      spawn,          SHCMD("st -e rdpconnect.sh") },
 	{ MODKEY,                       XK_s,      spawn,          SHCMD("st -e sega.sh") },
@@ -117,6 +126,9 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ WINKEY,                       XK_l,      spawn,          {.v = cmdlock } },
+	{ WINKEY,                       XK_n,      spawn,          {.v = cmdbreaknow } },
+	{ WINKEY|ShiftMask,             XK_n,      spawn,          {.v = cmdbreaktoggle } },
+	{ WINKEY|ControlMask,           XK_n,      spawn,          {.v = cmdbreakreset } },
 	{ 0,	    	            	XK_Print,      				spawn,          SHCMD("screenshot") },
 //	{ 0,							XK_Print, 					spawn,			{.v = scrshot } },
 	{ 0,                            XF86MonBrightnessDown,     spawn,         {.v = cmdbrightnessdown } },
