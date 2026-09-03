@@ -14,6 +14,9 @@ fi
 # Default editor
 export EDITOR=nvim
 
+# ChatGPT
+#export OPENAI_API_KEY=""
+
 # Python PATH
 PATH="$PATH:/home/aex/.local/bin"
 
@@ -44,7 +47,7 @@ alias ll='ls --color=auto -la --time-style long-iso'
 alias grep='grep --color=auto'
 alias egrep='egrep --color=auto'
 alias fgrep='fgrep --color=auto'
-alias ip='ip -br -c'
+alias ip='ip -c'
 alias pacman='pacman --color auto'
 alias pactree='pactree --color'
 alias yay='sudo -u aurbuilder yay'
@@ -132,12 +135,13 @@ rdp()
 {
 	# to get out of connection use Ctrl+Alt+Enter
 	# first parameter - server, second - username@domain, third - password
-	$(which xfreerdp3) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /smart-sizing:1920x1080 /cert:ignore +auto-reconnect +aero -themes +fonts -decorations /bpp:16 /gfx:avc444 /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /network:auto /video
+	#$(which xfreerdp) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /cert-ignore +auto-reconnect +heartbeat +aero -z -themes +fonts -decorations +compression /bpp:24 /offscreen-cache /bitmap-cache /gfx:avc444 /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /network:auto /video
+	$(which xfreerdp3) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /smart-sizing /w:1914 /h:1043 /scale-desktop:120 /cert:ignore +auto-reconnect +heartbeat +multitransport /gfx:AVC444,AVC420 -themes -wallpaper -window-drag -menu-anims +fonts -decorations +compression /sound:sys:pulse,quality:dynamic /mic:format:1
 }
 
 rdpf()
 {
-	$(which xfreerdp3) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /cert:ignore +auto-reconnect +aero -themes +fonts -decorations /bpp:16 /gfx:avc444 /sound:sys:pulse,format:1,quality:high /mic:format:1,quality:high -window-drag -menu-anims /network:auto /video
+	$(which xfreerdp3) /u:$2 /v:$1 /p:$3 /drive:Downloads,/home/aex/Downloads /f /scale-desktop:120 /cert:ignore +auto-reconnect +heartbeat +multitransport /gfx:AVC444,AVC420 -themes -wallpaper -window-drag -menu-anims +fonts -decorations +compression /sound:sys:pulse,quality:dynamic /mic:format:1
 
 }
 
@@ -161,23 +165,25 @@ f(){
 
 # update all
 update(){
-	# Remove all orphaned packages with pacman
-	sudo pacman -Rns --noconfirm $(pacman -Qdtq)
+    # Remove all orphaned packages with pacman
+    sudo pacman -Rns --noconfirm $(pacman -Qdtq)
 
-	# Remove all orphaned AUR packages with yay
-	yay -Yc --noconfirm --needed
+    # Remove all orphaned AUR packages with yay
+    yay -Yc --noconfirm --needed
 
-	# Clean the entire pacman package cache
-	sudo pacman -Scc --noconfirm --needed
+    # Clean the entire pacman package cache
+    sudo pacman -Scc --noconfirm --needed
 
-	# Clean yay’s package cache
-	yay -Sc --noconfirm --needed
+    # Clean yay’s package cache
+    yay -Sc --noconfirm --needed
 
-	sudo pacman -Sc --noconfirm --noconfirm --needed
-	sudo pacman -Sy archlinux-keyring --noconfirm --needed
-	sudo pacman -Syu --noconfirm --needed
-	yay -Sc --noconfirm --needed
-	yay -Syu --noconfirm --needed
+
+	sudo pacman -Sc --noconfirm
+	sudo pacman -Sy archlinux-keyring --noconfirm
+	sudo pacman -Syu --noconfirm
+	yay -Sc --noconfirm
+	yay -Syu --noconfirm
+	
 	rm -f /tmp/checkforupdates
 }
 
@@ -204,15 +210,26 @@ venv(){
 #underrail(){
 #	STEAM_COMPAT_CLIENT_INSTALL_PATH=~/Games/underrail STEAM_COMPAT_DATA_PATH=~/Games/underrail "/home/aex/.local/share/Steam/steamapps/common/Proton - Experimental/proton" run "/home/aex/Games/underrail/pfx/drive_c/GOG Games/UnderRail/underrail.exe"
 #}
+. "$HOME/.cargo/env"
 
 # Start ssh-agent
 #eval "$(ssh-agent -s)"
 
 # Freeciv
 #freeciv(){
-#	LANG=ru_RU.utf-8 LANGUAGE=ru freeciv-gtk3
+#	LANG=ru_RU.utf-8 LANGUAGE=ru freeciv-gtk4
 #}
 
-whatismyip(){
-	curl -s https://icanhazip.com
+# Decompress NSZ files in current folder
+decompress_nsz(){
+	for i in *.nsz; do nsz -D "$i"; done && sync
+	rm *.nsz
 }
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/aex/.lmstudio/bin"
+# End of LM Studio CLI section
+
+
+# Pi
+export PATH="/home/aex/.local/share/pi-node/node-v22.22.3-linux-x64/bin:$PATH"

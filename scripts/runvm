@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# qemu-img create -f qcow2 /home/aex/Downloads/disk64G.qcow2 64G
+
+#qemu-system-x86_64 -enable-kvm -machine q35 -cpu host -m 4G -smp 2 -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF.4m.fd -hda /home/aex/Downloads/disk64G.qcow2 -cdrom /home/aex/Downloads/win.iso -boot order=d -vga std -net nic -net user,smb=/home/aex/Downloads
+qemu-system-x86_64 -enable-kvm -machine q35 -cpu host -m 4G -smp 2 -drive if=pflash,format=raw,readonly=on,file=/usr/share/edk2/x64/OVMF.4m.fd -hda /home/aex/Downloads/snapshot.qcow2 -cdrom /home/aex/Downloads/win.iso -boot order=d -vga std -net nic -net user

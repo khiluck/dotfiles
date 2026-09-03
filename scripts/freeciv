@@ -1,0 +1,2 @@
+#!/bin/bash
+LANG=ru_RU.utf-8 LANGUAGE=ru $(which freeciv-gtk4)

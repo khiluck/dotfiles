@@ -109,7 +109,7 @@ print_brightness(){
 }
 
 checkforupdates(){
-	[ -f /tmp/checkforupdates ] && printf "📦 $(cat /tmp/checkforupdates)" 
+	[ -f /tmp/checkforupdates ] && printf "📦$(cat /tmp/checkforupdates)" 
 }
 
 print_date(){
