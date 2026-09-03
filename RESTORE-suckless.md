@@ -120,6 +120,30 @@ alpha`), это нормально, строка уже есть в нашем `
 Высота меню задаётся вызывающей стороной через `-l N`: в `scripts/connect.sh` и
 `scripts/rdpconnect.sh` стоит `-l 15`, в `scripts/dmenuunicode` — `-l 30`.
 
+## flameshot (скриншоты с рисованием, `Win+S`)
+
+Пакет `flameshot`, конфиг — `.config/flameshot/flameshot.ini`, обёртка —
+`scripts/screenshot-draw`.
+
+**Обязательная опция** в `flameshot.ini`:
+
+```ini
+[General]
+useX11LegacyScreenshot=true
+```
+
+Начиная с flameshot 14.0.0 на X11 снимок по умолчанию делается через
+`xdg-desktop-portal`. На dwm это тупик: ни один установленный бэкенд портала не
+реализует `org.freedesktop.impl.portal.Screenshot` (у `xdg-desktop-portal-gtk`
+в `Interfaces=` его просто нет, а `-gnome`/`-kde`/`-wlr` требуют своих
+окружений). Запрос уходит в никуда, и flameshot **зависает навсегда** в
+`ScreenGrabber::freeDesktopPortal`. Опция возвращает прямой захват через X11.
+
+Вторая деталь: `flameshot gui --clipboard` бесполезен сам по себе — процесс
+после копирования завершается и вместе с ним теряется владение X-выделением,
+буфер оказывается пустым. Поэтому `screenshot-draw` отдаёт картинку через
+`flameshot gui --raw` и владельцем буфера делает `xclip`, который остаётся жить.
+
 ## Проверка, что получилось то же самое
 
 ```sh

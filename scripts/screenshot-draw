@@ -1,0 +1,24 @@
+#!/bin/sh
+# Скриншот с рисованием/аннотациями через flameshot.
+#
+# Почему не просто `flameshot gui --clipboard`: flameshot 14 после копирования
+# завершается, а вместе с процессом теряется владение X-выделением, и буфер
+# обмена оказывается пустым. Поэтому владельцем буфера делаем xclip, который
+# остаётся в памяти.
+#
+# Требует useX11LegacyScreenshot=true в ~/.config/flameshot/flameshot.ini:
+# на dwm нет бэкенда xdg-desktop-portal со Screenshot, и без этой опции
+# flameshot зависает навсегда.
+
+out="/tmp/screenshot-$(date +%F_%H-%M-%S).png"
+tmp=$(mktemp /tmp/flameshot-XXXXXXXX.png) || exit 1
+trap 'rm -f "$tmp"' EXIT INT TERM
+
+flameshot gui --raw > "$tmp" 2>/dev/null
+
+# пустой файл = отмена (Escape или закрытие без выделения)
+[ -s "$tmp" ] || exit 0
+
+cp -- "$tmp" "$out" || exit 1
+xclip -selection clipboard -target image/png -i "$out"
+notify-send "Скриншот" "В буфере обмена и в $out" 2>/dev/null &

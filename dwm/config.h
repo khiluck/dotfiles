@@ -109,7 +109,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_s,      spawn,          SHCMD("st -e sega.sh") },
 	{ MODKEY|ShiftMask,             XK_x,      spawn,          SHCMD("st -e moonkill.sh") },
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
-	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot") },
+	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot-draw") },
 	{ WINKEY,		                XK_c,      spawn,          SHCMD("galculator") },
 	{ WINKEY,		                XK_z,      spawn,          SHCMD("brnorm") },
 	{ WINKEY,		                XK_p,      spawn,          SHCMD("pass.sh") },
