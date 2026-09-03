@@ -6,6 +6,10 @@ static int topbar = 1;                      /* -b  option; if 0, dmenu appears a
 /* --- patch: center --- */
 static int centered = 1;                    /* -c option; меню по центру экрана */
 static int min_width = 700;                 /* минимальная ширина в центрированном режиме */
+/* Сколько строк реально измерять шрифтом при подборе ширины (см. max_textw).
+ * measure_slack — насколько короче самой длинной строки ещё стоит мерить. */
+static const unsigned int measure_max   = 32;
+static const unsigned int measure_slack = 2;
 static const float menu_height_ratio = 2.0f; /* 2.0 = по центру вертикали, 4.0 = на 1/4 сверху */
 
 /* --- patch: alpha --- */
