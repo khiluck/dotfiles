@@ -8,8 +8,8 @@ FILENAME="$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4"
 # Системный звук и микрофон пишутся ДВУМЯ отдельными входами и микшируются в
 # ffmpeg, поэтому уровни независимы, а шумодав вешается ТОЛЬКО на микрофон и не
 # трогает музыку/звук из видео.
-SYS_VOL=0.28          # громкость системного звука в миксе: тише, чтобы говорить поверх (1.0 = как есть)
-MIC_VOL=1.4           # усиление микрофона в миксе
+SYS_VOL=0.12          # громкость системного звука в миксе: сильно тише, чтобы говорить поверх (1.0 = как есть)
+MIC_VOL=2.6           # усиление микрофона в миксе (пики ловит alimiter в конце)
 MIC_HIGHPASS=80       # срезать низкий гул/вибрацию ниже этой частоты, Гц
 MIC_DENOISE="afftdn=nr=12:nf=-25:tn=1"   # шумодав микрофона (nr — сила в дБ, tn=1 — адаптивно)
 MIC_LOWPASS=15000     # срезать высокочастотное шипение выше этой частоты, Гц
@@ -69,14 +69,24 @@ aresample=async=1:first_pts=0,alimiter=limit=0.97[aout]"
 }
 
 stop_screencast(){
-  # Сначала корректно останавливаем ffmpeg, потом уже чистим звук: если убрать
-  # loopback/recording раньше, ffmpeg на мгновение читает исчезнувший источник.
+  # Собираем pid'ы записи из ДВУХ источников: pid-файла И живых процессов ffmpeg
+  # нашей записи (x11grab → ~/Videos/screencast-*). Так остановка срабатывает,
+  # даже если pid-файл потерялся/разошёлся — иначе запись «зависает» и Win+W не
+  # может её убить (ровно этот случай и был).
+  local pids="" recpid p alive
   recpid="$(cat /tmp/recordingpid 2>/dev/null || true)"
   rm -f /tmp/recordingpid
+  pids="$recpid $(recpids)"
+  # оставляем только уникальные живые pid'ы
+  local uniq=""
+  for p in $pids; do
+    case " $uniq " in *" $p "*) continue ;; esac
+    [ -n "$p" ] && kill -0 "$p" 2>/dev/null && uniq="$uniq $p"
+  done
 
-  if [ -n "$recpid" ] && kill -0 "$recpid" 2>/dev/null; then
-    echo "🛑 Останавливаем запись (SIGTERM), ждём финализацию файла..."
-    kill -15 "$recpid" || true
+  if [ -n "$uniq" ]; then
+    echo "🛑 Останавливаем запись (SIGTERM), ждём финализацию файла...${uniq}"
+    for p in $uniq; do kill -15 "$p" 2>/dev/null || true; done
     # SIGTERM заставляет ffmpeg дописать файл: с +faststart он переносит moov
     # в начало, перечитывая весь файл. На длинной записи это дольше пары секунд,
     # поэтому ЖДЁМ фактического выхода, а не фиксированные 3 секунды. kill -9 —
@@ -84,15 +94,18 @@ stop_screencast(){
     # середине финализации и запись не открывается.
     grace=60
     for i in $(seq 1 $((grace * 10))); do
-      kill -0 "$recpid" 2>/dev/null || break
+      alive=0
+      for p in $uniq; do kill -0 "$p" 2>/dev/null && alive=1; done
+      [ "$alive" = 0 ] && break
       sleep 0.1
     done
-    if kill -0 "$recpid" 2>/dev/null; then
-      echo "⚠️ ffmpeg не завершился за ${grace} с — принудительно (файл может быть повреждён)." >&2
-      kill -9 "$recpid" 2>/dev/null || true
-    else
-      echo "✅ Файл дописан."
-    fi
+    for p in $uniq; do
+      if kill -0 "$p" 2>/dev/null; then
+        echo "⚠️ ffmpeg $p не завершился за ${grace} с — принудительно (файл может быть повреждён)." >&2
+        kill -9 "$p" 2>/dev/null || true
+      fi
+    done
+    echo "✅ Файл дописан."
   fi
 
   echo "🧹 Выгружаем loopback и виртуальные устройства (PipeWire/PulseAudio)..."
@@ -117,6 +130,17 @@ loop_refresh(){
   done
 }
 
-[ -f /tmp/screencast ] && stop_screencast
+# pid'ы нашей записи по командной строке ffmpeg — резервный способ найти запись,
+# если pid-файл потерялся
+recpids(){
+  pgrep -f 'ffmpeg .*-f x11grab.*/Videos/screencast-' 2>/dev/null || true
+}
+
+# Win+W — переключатель: если запись идёт (по флагу ИЛИ по живому ffmpeg) —
+# останавливаем; иначе стартуем. Опора на живой процесс защищает от рассинхрона,
+# когда флаг/pid-файл разошлись с реальностью.
+if [ -f /tmp/screencast ] || [ -n "$(recpids)" ]; then
+  stop_screencast
+fi
 start_screencast && loop_refresh
 
