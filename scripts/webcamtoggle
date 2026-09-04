@@ -2,14 +2,21 @@
 
 start_webcam(){
 	touch /tmp/webcam && sleep 0.5s && refbar
-	# Камера (Integrated Camera, T480s) умеет 1280x720@30, но ТОЛЬКО в MJPG —
-	# в несжатом YUYV на 720p всего 10 fps. Поэтому явно просим input_format=mjpeg.
-	# Раньше стояло 640x480 (да ещё несжатый YUYV) — отсюда низкое качество.
-	# --autofit держит окно умеренным (сам кадр всё равно 720p, downscale = чётче,
-	# чем нативные 480). Убери --autofit, чтобы окно было в полный размер 720p.
-	mpv --demuxer-lavf-o=video_size=1280x720,input_format=mjpeg,framerate=30 \
-	    av://v4l2:/dev/video0 --profile=low-latency --untimed --title=webcam \
-	    --no-cache --no-osc --no-input-default-bindings --autofit=960x540 -vf hflip
+
+	# Сенсор этой камеры (Integrated Camera, T480s) реально «видит» ~480p:
+	# замеры резкости падают с ростом разрешения (640x480=104, 720p=46), то есть
+	# 720p/960p — интерполяция без реальной детализации, да ещё и мягче. Поэтому
+	# снимаем НАТИВНЫЕ 640x480 в несжатом YUYV (mpv берёт его по умолчанию — он
+	# чётче MJPG на том же разрешении).
+	#
+	# Чёткость и «объём» поднимаем в самой камере (ISP): sharpness и contrast по
+	# умолчанию стоят низко (0 и 32) — отсюда «замыленность». Это даёт больше,
+	# чем любое повышение разрешения. power_line_frequency уже 50 Гц (без мерцания).
+	v4l2-ctl -d /dev/video0 --set-ctrl=sharpness=5 --set-ctrl=contrast=48 2>/dev/null || true
+
+	mpv --demuxer-lavf-o=video_size=640x480 av://v4l2:/dev/video0 \
+	    --profile=low-latency --untimed --title=webcam \
+	    --no-cache --no-osc --no-input-default-bindings -vf hflip
 }
 
 
