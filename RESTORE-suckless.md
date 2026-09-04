@@ -151,6 +151,28 @@ useX11LegacyScreenshot=true
 буфер оказывается пустым. Поэтому `screenshot-draw` отдаёт картинку через
 `flameshot gui --raw` и владельцем буфера делает `xclip`, который остаётся жить.
 
+## RNNoise — шумоподавление микрофона (как в Windows)
+
+Системный фильтр PipeWire: виртуальный источник «Noise Canceling Source»
+прогоняет реальный микрофон через нейросетевой шумодав RNNoise и становится
+микрофоном по умолчанию — чистится звук везде (запись экрана, звонки, встречи).
+Замер: фоновый шум −68 → −91 дБ (−23 дБ).
+
+```sh
+sudo pacman -S --needed noise-suppression-for-voice   # даёт /usr/lib/ladspa/librnnoise_ladspa.so
+mkdir -p ~/.config/pipewire/pipewire.conf.d
+cp .config/pipewire/pipewire.conf.d/99-rnnoise-mic.conf ~/.config/pipewire/pipewire.conf.d/
+systemctl --user restart pipewire pipewire-pulse wireplumber
+wpctl set-default "$(wpctl status | awk '/Sources:/{f=1} f&&/Noise Canceling/{print $2+0; exit}')"
+```
+
+Проверка: `pactl get-default-source` → `rnnoise_source`. Вход фильтра должен идти
+от железного микрофона (`pw-link -l | grep -A1 capture.rnnoise_source`), не
+зациклен. Выбор по умолчанию персистится в `~/.local/state/wireplumber`.
+
+`screencast` пишет микрофон через этот источник (default), поэтому свой шумодав
+(afftdn) в скрипте убран — RNNoise делает это лучше и до ffmpeg.
+
 ## Проверка, что получилось то же самое
 
 ```sh

@@ -11,8 +11,11 @@ FILENAME="$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4"
 SYS_VOL=0.12          # громкость системного звука в миксе: сильно тише, чтобы говорить поверх (1.0 = как есть)
 MIC_VOL=2.6           # усиление микрофона в миксе (пики ловит alimiter в конце)
 MIC_HIGHPASS=80       # срезать низкий гул/вибрацию ниже этой частоты, Гц
-MIC_DENOISE="afftdn=nr=12:nf=-25:tn=1"   # шумодав микрофона (nr — сила в дБ, tn=1 — адаптивно)
 MIC_LOWPASS=15000     # срезать высокочастотное шипение выше этой частоты, Гц
+# Шумодав микрофона делает СИСТЕМНЫЙ фильтр RNNoise (виртуальный источник по
+# умолчанию "Noise Canceling Source", ~/.config/pipewire/pipewire.conf.d/), а не
+# ffmpeg — поэтому здесь только лёгкие highpass/lowpass, без afftdn (иначе двойной
+# шумодав глушит голос).
 # ------------------------------------------------------------------------------
 
 start_screencast(){
@@ -46,7 +49,7 @@ start_screencast(){
     AUDIO_INPUTS=(-f pulse -thread_queue_size 4096 -i "${SINK}.monitor" \
                   -f pulse -thread_queue_size 4096 -i "$MIC")
     FILTER="[1:a]aresample=48000,volume=${SYS_VOL}[sys];\
-[2:a]aresample=48000,highpass=f=${MIC_HIGHPASS},${MIC_DENOISE},lowpass=f=${MIC_LOWPASS},volume=${MIC_VOL}[mic];\
+[2:a]aresample=48000,highpass=f=${MIC_HIGHPASS},lowpass=f=${MIC_LOWPASS},volume=${MIC_VOL}[mic];\
 [sys][mic]amix=inputs=2:normalize=0:dropout_transition=0,\
 aresample=async=1:first_pts=0,alimiter=limit=0.97[aout]"
   else
