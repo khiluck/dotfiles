@@ -15,6 +15,8 @@
 | st     | `04ce0d6` (0.9.3+1) | `config.h` + `st-local-patches-20260903.diff` (alpha + scrollback-reflow + clipboard) |
 | slock  | тег `1.7`         | только `config.h`, исходники чистые |
 | scroll | `51ee387` (0.1)   | ничего, конфиг по умолчанию |
+| pauzer | своё, upstream нет | целиком в `pauzer/pauzer-src.tar.gz` |
+| todo   | своё, upstream нет | целиком в `todo/todo-src.tar.gz` |
 
 ## Пакеты
 
@@ -92,6 +94,11 @@ cd /usr/src/scroll && sudo make install
 # --- pauzer (свой таймер перерывов) ---
 sudo tar xzf $DF/pauzer/pauzer-src.tar.gz -C /usr/src
 cd /usr/src/pauzer && sudo make install
+
+# --- todo (свой список задач, Win+D) ---
+sudo tar xzf $DF/todo/todo-src.tar.gz -C /usr/src
+cd /usr/src/todo && sudo make install
+mkdir -p ~/Work/SyncData/ToDo        # сам список, путь задан в config.h
 ```
 
 `dmenu-all-local-changes-20260903.diff` содержит всё сразу: center + alpha +

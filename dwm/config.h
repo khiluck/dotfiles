@@ -114,6 +114,7 @@ static Key keys[] = {
 	{ WINKEY,                       XK_b,      spawn,          SHCMD("chromium") },
 	{ WINKEY,	    	            XK_s,      spawn,          SHCMD("screenshot-draw") },
 	{ WINKEY,		                XK_c,      spawn,          SHCMD("galculator") },
+	{ WINKEY,		                XK_d,      spawn,          SHCMD("todo") },
 	{ WINKEY,		                XK_z,      spawn,          SHCMD("brnorm") },
 	{ WINKEY,		                XK_p,      spawn,          SHCMD("pass.sh") },
 	{ WINKEY,		                XK_w,      spawn,          SHCMD("screencast") },
