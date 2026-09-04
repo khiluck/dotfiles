@@ -1,6 +1,9 @@
 #!/bin/bash
-# clear только если запущены в терминале (хоткеем из dwm терминала нет)
-[[ -t 1 ]] && clear
+# Терминал ли это: [[ -t 1 ]] тут не годится, dwm наследует stdout от startx
+# (/dev/tty1), а эмулятор терминала даёт pty (/dev/pts/N).
+case "$(tty 2>/dev/null)" in
+	/dev/pts/*) clear ;;
+esac
 #gpg --batch --yes -d -o $HOME/secret/rdp.list $HOME/secret/rdp.list.gpg || exit 1
 
 namearray=()

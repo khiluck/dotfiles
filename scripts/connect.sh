@@ -1,7 +1,17 @@
 #!/bin/bash
 export TERM=xterm
-# clear только если запущены в терминале (хоткеем из dwm терминала нет)
-[[ -t 1 ]] && clear
+
+# Запущены ли мы в окне терминала? Проверять [[ -t 1 ]] нельзя: X стартует
+# через startx с tty1, поэтому dwm и всё, что он запускает, наследует
+# stdout = /dev/tty1, и проверка была истинной даже при запуске хоткеем -
+# ssh уходил на первую консоль вместо нового окна. Эмулятор терминала даёт
+# pty (/dev/pts/N), консоль - /dev/ttyN, по этому и различаем.
+case "$(tty 2>/dev/null)" in
+	/dev/pts/*) interactive=1 ;;
+	*)          interactive=0 ;;
+esac
+
+[[ $interactive = 1 ]] && clear
 
 
 namearray=() 
@@ -39,9 +49,8 @@ done
 
 [[ -z $IP ]] && { echo "No IP found for [$choice]" >&2; exit 1; }
 
-# Если терминала нет (запуск хоткеем из dwm) — открываем ssh в новом окне st,
-# чтобы меню не висело поверх пустого полноэкранного терминала.
-if [[ ! -t 1 ]]; then
+# Терминала нет (запуск хоткеем из dwm) — открываем ssh в новом окне st.
+if [[ $interactive = 0 ]]; then
 	[[ -z $PORT ]] || exec st -e ssh -lroot "$IP" -p "$PORT"
 	exec st -e ssh -X -lroot "$IP"
 fi
