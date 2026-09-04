@@ -112,6 +112,10 @@ checkforupdates(){
 	[ -f /tmp/checkforupdates ] && printf "📦$(cat /tmp/checkforupdates)" 
 }
 
+print_break(){
+	[ -f /tmp/pauzer ] && printf "%s|" "$(cat /tmp/pauzer)"
+}
+
 print_date(){
 	PRINTDATE=$(date "+%a %d-%b|🕙 %H:%M ")
 	printf "🗓️%s" "$PRINTDATE"
@@ -127,7 +131,12 @@ print_rec(){
 }
 
 whatismyip(){
-	[ -f /tmp/myipaddress ] && printf "$(cat /tmp/myipaddress)"
+	# во время записи экрана (/tmp/screencast) прячем IP, чтобы не светить в кадр
+	if [ -f /tmp/screencast ]; then
+		printf "🛡 hidden"
+		return
+	fi
+	[ -f /tmp/myipaddress ] && printf '%s' "$(cat /tmp/myipaddress)"
 }
 
 print_webcam(){
@@ -136,7 +145,7 @@ print_webcam(){
 
 while true
 do
-	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_brightness)|$(print_battery)|$(print_internet)$(checkforupdates)|$(whatismyip)|$(print_date)"
+	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_brightness)|$(print_battery)|$(print_internet)$(checkforupdates)|$(whatismyip)|$(print_break)$(print_date)"
 	sleep 60s
 done
 
