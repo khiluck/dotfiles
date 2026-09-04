@@ -2,6 +2,8 @@
 
 # отступ окна камеры от краёв экрана, px (как у блогеров — не впритык)
 MARGIN=28
+# размер окошка камеры (кадр 4:3; уменьшение НЕ мылит — мылит только увеличение)
+CAMSIZE=400x300
 
 # Ставит плавающее окно камеры в правый-нижний угол с отступом MARGIN.
 # Запускается в фоне и ждёт появления окна (mpv стартует не мгновенно).
@@ -44,6 +46,7 @@ start_webcam(){
 	# position_cam. --ontop — держать поверх других окон, как оверлей блогера.
 	mpv --demuxer-lavf-o=video_size=640x480 av://v4l2:/dev/video0 \
 	    --profile=low-latency --untimed --title=webcam --x11-name=floatcam --ontop \
+	    --autofit="$CAMSIZE" \
 	    --no-cache --no-osc --no-input-default-bindings -vf hflip
 }
 
