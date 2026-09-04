@@ -14,8 +14,9 @@ start_screencast(){
   # Параметры видео/аудио
   VIDEO_SIZE="$(xdpyinfo | awk '/dimensions/ {print $2;}')"
 
-  # Пытаемся аппаратно кодировать через VAAPI (AMD VCN) — разгрузит ЦП
-# Пытаемся аппаратно кодировать через VAAPI (AMD VCN)
+  # Аппаратное кодирование через VAAPI — разгружает ЦП. На этом ноутбуке это
+  # Intel UHD 620 (Quick Sync), h264_vaapi проверен и работает; на других
+  # машинах через тот же VAAPI пойдёт их GPU. Если VAAPI нет — libx264 на ЦП.
 	if [ -e /dev/dri/renderD128 ] && ffmpeg -hide_banner -hwaccels 2>/dev/null | grep -qi vaapi; then
 	  VIDEO_CODEC=(-vaapi_device /dev/dri/renderD128 \
 	               -vf "format=nv12,hwupload" \
