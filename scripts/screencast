@@ -8,7 +8,7 @@ FILENAME="$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4"
 # Системный звук и микрофон пишутся ДВУМЯ отдельными входами и микшируются в
 # ffmpeg, поэтому уровни независимы, а шумодав вешается ТОЛЬКО на микрофон и не
 # трогает музыку/звук из видео.
-SYS_VOL=0.12          # громкость системного звука в миксе: сильно тише, чтобы говорить поверх (1.0 = как есть)
+SYS_VOL=0.09          # громкость системного звука в миксе: сильно тише, чтобы говорить поверх (1.0 = как есть)
 MIC_VOL=2.6           # усиление микрофона в миксе (пики ловит alimiter в конце)
 MIC_HIGHPASS=80       # срезать низкий гул/вибрацию ниже этой частоты, Гц
 MIC_LOWPASS=15000     # срезать высокочастотное шипение выше этой частоты, Гц
@@ -49,7 +49,7 @@ start_screencast(){
     AUDIO_INPUTS=(-f pulse -thread_queue_size 4096 -i "${SINK}.monitor" \
                   -f pulse -thread_queue_size 4096 -i "$MIC")
     FILTER="[1:a]aresample=48000,volume=${SYS_VOL}[sys];\
-[2:a]aresample=48000,highpass=f=${MIC_HIGHPASS},lowpass=f=${MIC_LOWPASS},volume=${MIC_VOL}[mic];\
+[2:a]aresample=48000,highpass=f=${MIC_HIGHPASS},lowpass=f=${MIC_LOWPASS},volume=${MIC_VOL},aformat=channel_layouts=mono,pan=stereo|c0=c0|c1=c0[mic];\
 [sys][mic]amix=inputs=2:normalize=0:dropout_transition=0,\
 aresample=async=1:first_pts=0,alimiter=limit=0.97[aout]"
   else
@@ -72,6 +72,12 @@ aresample=async=1:first_pts=0,alimiter=limit=0.97[aout]"
 }
 
 stop_screencast(){
+  # Гасим индикатор записи в баре СРАЗУ: снимаем флаг и будим dwm_status. Иначе
+  # бар «висит» пока ffmpeg дописывает файл (а сам dwm_status обновляется раз в
+  # 60 с) — со стороны выглядит как «нажал стоп, а запись всё идёт».
+  rm -f /tmp/screencast
+  refbar || true
+
   # Собираем pid'ы записи из ДВУХ источников: pid-файла И живых процессов ffmpeg
   # нашей записи (x11grab → ~/Videos/screencast-*). Так остановка срабатывает,
   # даже если pid-файл потерялся/разошёлся — иначе запись «зависает» и Win+W не
@@ -111,18 +117,14 @@ stop_screencast(){
     echo "✅ Файл дописан."
   fi
 
-  echo "🧹 Выгружаем loopback и виртуальные устройства (PipeWire/PulseAudio)..."
-  modules=$(pactl list short modules | grep -E 'module-loopback|module-null-sink|module-combine-sink' | cut -f1)
-  if [ -z "$modules" ]; then
-    echo "✅ Нет активных модулей для выгрузки."
-  else
-    for id in $modules; do
-      pactl unload-module "$id" && echo "🧹 Выгружен модуль ID $id"
-    done
-    echo "✅ Очистка завершена."
-  fi
+  # На всякий случай снимаем старые аудиомодули, если остались от прежней схемы
+  # (сейчас запись их не создаёт). `|| true` — чтобы пустой grep не ронял скрипт.
+  modules=$(pactl list short modules | grep -E 'module-loopback|module-null-sink|module-combine-sink' | cut -f1 || true)
+  for id in $modules; do
+    pactl unload-module "$id" 2>/dev/null && echo "🧹 Выгружен модуль ID $id" || true
+  done
 
-  rm -f /tmp/screencast && refbar
+  refbar || true   # ещё раз обновим бар после фактической остановки
   exit
 }
 
