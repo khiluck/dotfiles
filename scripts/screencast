@@ -4,15 +4,29 @@ set -euo pipefail
 
 FILENAME="$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4"
 
-start_screencast(){
-  # гарантируем наличие виртуалки "recording"
-  pactl list short sinks | awk '{print $2}' | grep -qx recording || micplusspeakers.sh
+# --- Баланс и обработка звука (крути под себя) ---------------------------------
+# Системный звук и микрофон пишутся ДВУМЯ отдельными входами и микшируются в
+# ffmpeg, поэтому уровни независимы, а шумодав вешается ТОЛЬКО на микрофон и не
+# трогает музыку/звук из видео.
+SYS_VOL=0.28          # громкость системного звука в миксе: тише, чтобы говорить поверх (1.0 = как есть)
+MIC_VOL=1.4           # усиление микрофона в миксе
+MIC_HIGHPASS=80       # срезать низкий гул/вибрацию ниже этой частоты, Гц
+MIC_DENOISE="afftdn=nr=12:nf=-25:tn=1"   # шумодав микрофона (nr — сила в дБ, tn=1 — адаптивно)
+MIC_LOWPASS=15000     # срезать высокочастотное шипение выше этой частоты, Гц
+# ------------------------------------------------------------------------------
 
+start_screencast(){
   touch /tmp/screencast && sleep 0.5s && refbar
   echo "$FILENAME" > /tmp/screencast
 
-  # Параметры видео/аудио
+  # Параметры видео
   VIDEO_SIZE="$(xdpyinfo | awk '/dimensions/ {print $2;}')"
+
+  # Источники звука — по умолчанию (см. также micplusspeakers.sh, здесь не нужен)
+  local SINK MIC MIC_IS_MONITOR=0
+  SINK="$(pactl get-default-sink)"
+  MIC="$(pactl get-default-source)"
+  case "$MIC" in *.monitor) MIC_IS_MONITOR=1 ;; esac
 
   # Аппаратное кодирование через VAAPI — разгружает ЦП. На этом ноутбуке это
   # Intel UHD 620 (Quick Sync), h264_vaapi проверен и работает; на других
@@ -25,15 +39,29 @@ start_screencast(){
 	  VIDEO_CODEC=(-c:v libx264 -crf 21 -preset veryfast -pix_fmt yuv420p -r 30)
 	fi
 
-  # Небольшие, но важные буферы + выравнивание аудио по времени
-  # Можно дополнительно попросить умеренную задержку у Pulse: PULSE_LATENCY_MSEC=60
+  # Аудиовходы: [0]=видео, [1]=системный звук (monitor выхода), [2]=микрофон.
+  # Микрофон чистим (highpass + шумодав + lowpass) и подмешиваем к системному.
+  local AUDIO_INPUTS FILTER
+  if [ "$MIC_IS_MONITOR" = 0 ]; then
+    AUDIO_INPUTS=(-f pulse -thread_queue_size 4096 -i "${SINK}.monitor" \
+                  -f pulse -thread_queue_size 4096 -i "$MIC")
+    FILTER="[1:a]aresample=48000,volume=${SYS_VOL}[sys];\
+[2:a]aresample=48000,highpass=f=${MIC_HIGHPASS},${MIC_DENOISE},lowpass=f=${MIC_LOWPASS},volume=${MIC_VOL}[mic];\
+[sys][mic]amix=inputs=2:normalize=0:dropout_transition=0,\
+aresample=async=1:first_pts=0,alimiter=limit=0.97[aout]"
+  else
+    # микрофона по умолчанию нет (источник — monitor): пишем только системный звук
+    AUDIO_INPUTS=(-f pulse -thread_queue_size 4096 -i "${SINK}.monitor")
+    FILTER="[1:a]aresample=48000,aresample=async=1:first_pts=0[aout]"
+  fi
+
   PULSE_LATENCY_MSEC=60 ffmpeg -y \
     -f x11grab -thread_queue_size 4096 -framerate 30 -s "$VIDEO_SIZE" -i "$DISPLAY" \
-    -f pulse   -thread_queue_size 4096 -i recording.monitor \
+    "${AUDIO_INPUTS[@]}" \
     "${VIDEO_CODEC[@]}" \
-    -map 0:v:0 -map 1:a:0 \
+    -filter_complex "$FILTER" \
+    -map 0:v:0 -map "[aout]" \
     -c:a aac -b:a 160k -ar 48000 -ac 2 \
-    -af "aresample=async=1:min_hard_comp=0.100:first_pts=0,highpass=f=40,lowpass=f=16000,afftdn=nr=8:nf=-30" \
     -movflags +faststart \
     "$FILENAME" &
 
