@@ -41,6 +41,8 @@ static const Rule rules[] = {
 	/* flameshot: не тайлить оверлей, иначе dwm сдвинет его вниз на высоту бара.
 	 * Полноэкранным его делает screenshot-draw через _NET_WM_STATE_FULLSCREEN. */
 	{ "flameshot",      NULL,       NULL,       0,            1,           -1 },
+	/* окно веб-камеры (webcamtoggle: mpv --x11-name=floatcam) — плавающее */
+	{ NULL,       "floatcam", NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 

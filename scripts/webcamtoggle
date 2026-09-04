@@ -1,5 +1,29 @@
 #!/bin/bash
 
+# отступ окна камеры от краёв экрана, px (как у блогеров — не впритык)
+MARGIN=28
+
+# Ставит плавающее окно камеры в правый-нижний угол с отступом MARGIN.
+# Запускается в фоне и ждёт появления окна (mpv стартует не мгновенно).
+# Полагаемся на xdotool, а не на mpv --geometry: dwm иначе может перехватить
+# позицию при маппинге. Правило в config.h делает окно (instance=floatcam)
+# плавающим — без него dwm бы его тайлил.
+position_cam(){
+	local wid i SW SH
+	for i in $(seq 1 100); do
+		wid=$(xdotool search --classname '^floatcam$' 2>/dev/null | head -1)
+		[ -n "$wid" ] && break
+		sleep 0.1
+	done
+	[ -n "$wid" ] || return
+	sleep 0.2   # дать окну получить итоговый размер
+	SW=$(xdotool getdisplaygeometry | cut -d' ' -f1)
+	SH=$(xdotool getdisplaygeometry | cut -d' ' -f2)
+	local WINDOW X Y WIDTH HEIGHT SCREEN
+	eval "$(xdotool getwindowgeometry --shell "$wid")"
+	xdotool windowmove "$wid" "$((SW - WIDTH - MARGIN))" "$((SH - HEIGHT - MARGIN))"
+}
+
 start_webcam(){
 	touch /tmp/webcam && sleep 0.5s && refbar
 
@@ -14,8 +38,12 @@ start_webcam(){
 	# чем любое повышение разрешения. power_line_frequency уже 50 Гц (без мерцания).
 	v4l2-ctl -d /dev/video0 --set-ctrl=sharpness=5 --set-ctrl=contrast=48 2>/dev/null || true
 
+	position_cam &
+
+	# --x11-name=floatcam — по нему правило dwm делает окно плавающим и его ловит
+	# position_cam. --ontop — держать поверх других окон, как оверлей блогера.
 	mpv --demuxer-lavf-o=video_size=640x480 av://v4l2:/dev/video0 \
-	    --profile=low-latency --untimed --title=webcam \
+	    --profile=low-latency --untimed --title=webcam --x11-name=floatcam --ontop \
 	    --no-cache --no-osc --no-input-default-bindings -vf hflip
 }
 
