@@ -41,7 +41,33 @@ start_screencast(){
 }
 
 stop_screencast(){
-  echo "🛑 Останавливаем loopback и виртуальные устройства (PipeWire/PulseAudio)..."
+  # Сначала корректно останавливаем ffmpeg, потом уже чистим звук: если убрать
+  # loopback/recording раньше, ffmpeg на мгновение читает исчезнувший источник.
+  recpid="$(cat /tmp/recordingpid 2>/dev/null || true)"
+  rm -f /tmp/recordingpid
+
+  if [ -n "$recpid" ] && kill -0 "$recpid" 2>/dev/null; then
+    echo "🛑 Останавливаем запись (SIGTERM), ждём финализацию файла..."
+    kill -15 "$recpid" || true
+    # SIGTERM заставляет ffmpeg дописать файл: с +faststart он переносит moov
+    # в начало, перечитывая весь файл. На длинной записи это дольше пары секунд,
+    # поэтому ЖДЁМ фактического выхода, а не фиксированные 3 секунды. kill -9 —
+    # только если процесс завис (не вышел за grace), иначе он рвёт файл на
+    # середине финализации и запись не открывается.
+    grace=60
+    for i in $(seq 1 $((grace * 10))); do
+      kill -0 "$recpid" 2>/dev/null || break
+      sleep 0.1
+    done
+    if kill -0 "$recpid" 2>/dev/null; then
+      echo "⚠️ ffmpeg не завершился за ${grace} с — принудительно (файл может быть повреждён)." >&2
+      kill -9 "$recpid" 2>/dev/null || true
+    else
+      echo "✅ Файл дописан."
+    fi
+  fi
+
+  echo "🧹 Выгружаем loopback и виртуальные устройства (PipeWire/PulseAudio)..."
   modules=$(pactl list short modules | grep -E 'module-loopback|module-null-sink|module-combine-sink' | cut -f1)
   if [ -z "$modules" ]; then
     echo "✅ Нет активных модулей для выгрузки."
@@ -53,11 +79,6 @@ stop_screencast(){
   fi
 
   rm -f /tmp/screencast && refbar
-  recpid="$(cat /tmp/recordingpid)"
-  kill -15 "$recpid" || true
-  rm -f /tmp/recordingpid
-  sleep 3
-  kill -9 "$recpid" 2>/dev/null || true
   exit
 }
 
