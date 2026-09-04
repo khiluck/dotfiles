@@ -135,11 +135,8 @@ print_rec(){
 }
 
 whatismyip(){
-	# во время записи экрана (/tmp/screencast) прячем IP, чтобы не светить в кадр
-	if [ -f /tmp/screencast ]; then
-		printf "🛡 hidden"
-		return
-	fi
+	# во время записи экрана (/tmp/screencast) IP не показываем вовсе
+	[ -f /tmp/screencast ] && return
 	[ -f /tmp/myipaddress ] && printf '%s' "$(cat /tmp/myipaddress)"
 }
 
@@ -150,7 +147,10 @@ print_webcam(){
 while true
 do
 	xsetroot -name "$(print_rec)$(print_webcam) ⌨ $(print_layout)|$(print_volume)|$(print_brightness)|$(print_battery)|$(print_internet)$(checkforupdates)|$(whatismyip)|$(print_break)$(print_date)"
-	sleep 60s
+	# Спим до НАЧАЛА следующей минуты, а не фиксированные 60 c. Иначе момент
+	# обновления сползал (итерация = сборка статуса + 60 c) и часы отставали
+	# почти на минуту. 10# — чтобы "08"/"09" не читались как восьмеричные.
+	sleep "$(( 60 - 10#$(date +%S) ))"
 done
 
 
