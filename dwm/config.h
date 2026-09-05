@@ -106,6 +106,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_Insert, spawn,          {.v = clipcmd } },
 	{ MODKEY,                       XK_o,      spawn,          {.v = urlcmd } },
 	{ WINKEY,                       XK_a,      spawn,          {.v = cmdchatgpt } },
+	{ WINKEY|ShiftMask,             XK_a,      spawn,          SHCMD("st -e bash -lc 'cd ~/claude && exec claude'") },
 	{ WINKEY,                       XK_e,      spawn,          {.v = cmdelement } },
 	{ WINKEY,                       XK_t,      spawn,          {.v = cmdtelegram } },
 //	{ WINKEY,                       XK_p,      spawn,          {.v = cmdspotify } },
