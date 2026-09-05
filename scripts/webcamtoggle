@@ -38,14 +38,7 @@ start_webcam(){
 	# Чёткость и «объём» поднимаем в самой камере (ISP): sharpness и contrast по
 	# умолчанию стоят низко (0 и 32) — отсюда «замыленность». Это даёт больше,
 	# чем любое повышение разрешения. power_line_frequency уже 50 Гц (без мерцания).
-	#
-	# exposure_dynamic_framerate=0 — ЗАФИКСИРОВАТЬ 30 fps. По умолчанию камера в
-	# слабом свете роняет частоту кадров ради выдержки → на записи экрана видео
-	# получается рваным/дёрганым (в реальности кажется плавнее). Ценой — в потёмках
-	# картинка чуть темнее/шумнее, зато движение ровное.
-	v4l2-ctl -d /dev/video0 \
-	         --set-ctrl=sharpness=5 --set-ctrl=contrast=48 \
-	         --set-ctrl=exposure_dynamic_framerate=0 2>/dev/null || true
+	v4l2-ctl -d /dev/video0 --set-ctrl=sharpness=5 --set-ctrl=contrast=48 2>/dev/null || true
 
 	position_cam &
 
