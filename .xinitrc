@@ -34,7 +34,7 @@ xset dpms 300 600 600
 ~/scripts/dwm_status &
 
 # add transparency
-xcompmgr &
+picom &   # композитор: перерисовывает GPU-окна на полной частоте (нужно для плавной записи экрана)
 
 # Notifications
 dunst &

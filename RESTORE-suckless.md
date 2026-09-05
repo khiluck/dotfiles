@@ -22,14 +22,17 @@
 
 ```
 pacman -S --needed base-devel git libx11 libxft libxinerama libxrandr libxext \
-                   fontconfig freetype2 xcompmgr xorg-xrandr xorg-xset xorg-xsetroot
+                   fontconfig freetype2 picom xorg-xrandr xorg-xset xorg-xsetroot
 ```
 
 - `ttf-joypixels` — цветные emoji в баре dwm и в меню. **Только AUR**, в
   репозиториях (включая chaotic-aur) его нет: `yay -S ttf-joypixels`.
   Установленная версия — 11.0.0-1, packager «Unknown», то есть собран локально.
-- `xcompmgr` — **обязателен для полупрозрачности** меню и st. Без композитора
-  ничего не ломается, но меню просто станет непрозрачным.
+- `picom` — композитор (замена старого xcompmgr). Нужен для полупрозрачности меню
+  и st, И для плавной записи экрана: xcompmgr не перерисовывал GPU-окна (видео в
+  браузере, mpv-камера) на полной частоте, из-за чего запись такого видео выходила
+  рваной (~18 fps); picom с glx+vsync это чинит (~29 fps). Конфиг — в
+  `.config/picom/picom.conf`, запускается из `.xinitrc`.
 - Дальше по вкусу: `feh`, `dunst`, `xss-lock`, `clipmenu`, `maim`, `imagemagick`,
   `xdotool`, `xorg-xdpyinfo`.
 
