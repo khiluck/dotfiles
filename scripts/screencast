@@ -4,6 +4,11 @@ set -euo pipefail
 
 FILENAME="$HOME/Videos/screencast-$(date '+%y%m%d-%H%M-%S').mp4"
 
+# Частота записи. Монитор 60 Гц → пиши 60, иначе движение (окна, прокрутка,
+# перетаскивание) на записи выглядит вдвое «дёрганее», чем вживую. 30 — меньше
+# файл, но заметно менее плавно. UHD 620 тянет 1080p60 через VAAPI.
+FPS=60
+
 # --- Баланс и обработка звука (крути под себя) ---------------------------------
 # Системный звук и микрофон пишутся ДВУМЯ отдельными входами и микшируются в
 # ffmpeg, поэтому уровни независимы, а шумодав вешается ТОЛЬКО на микрофон и не
@@ -37,9 +42,9 @@ start_screencast(){
 	if [ -e /dev/dri/renderD128 ] && ffmpeg -hide_banner -hwaccels 2>/dev/null | grep -qi vaapi; then
 	  VIDEO_CODEC=(-vaapi_device /dev/dri/renderD128 \
 	               -vf "format=nv12,hwupload" \
-    	           -c:v h264_vaapi -qp 21 -bf 2 -g 60 -r 30)
+    	           -c:v h264_vaapi -qp 23 -bf 0 -g $((FPS*2)) -r "$FPS")
 	else
-	  VIDEO_CODEC=(-c:v libx264 -crf 21 -preset veryfast -pix_fmt yuv420p -r 30)
+	  VIDEO_CODEC=(-c:v libx264 -crf 23 -preset ultrafast -pix_fmt yuv420p -r "$FPS")
 	fi
 
   # Аудиовходы: [0]=видео, [1]=системный звук (monitor выхода), [2]=микрофон.
@@ -59,7 +64,7 @@ aresample=async=1:first_pts=0,alimiter=limit=0.97[aout]"
   fi
 
   PULSE_LATENCY_MSEC=60 ffmpeg -y \
-    -f x11grab -thread_queue_size 4096 -framerate 30 -s "$VIDEO_SIZE" -i "$DISPLAY" \
+    -f x11grab -thread_queue_size 8192 -framerate "$FPS" -s "$VIDEO_SIZE" -i "$DISPLAY" \
     "${AUDIO_INPUTS[@]}" \
     "${VIDEO_CODEC[@]}" \
     -filter_complex "$FILTER" \
