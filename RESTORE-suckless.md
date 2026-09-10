@@ -11,7 +11,7 @@
 | Проект | Коммит / тег      | Что своё |
 |--------|-------------------|----------|
 | dmenu  | `7175c48` (5.4+3) | `config.h` + 3 диффа (center, alpha, lazy-width) |
-| dwm    | `44dbc68` (6.8+5) | только `config.h`, исходники чистые |
+| dwm    | `44dbc68` (6.8+5) | `config.h` + `dwm-sticky-20260910.diff` (sticky-окна: камера на всех столах без индикаторов занятости) |
 | st     | `04ce0d6` (0.9.3+1) | `config.h` + `st-local-patches-20260903.diff` (alpha + scrollback-reflow + clipboard) |
 | slock  | тег `1.7`         | только `config.h`, исходники чистые |
 | scroll | `51ee387` (0.1)   | ничего, конфиг по умолчанию |
@@ -72,6 +72,7 @@ sudo make install
 sudo git clone https://git.suckless.org/dwm /usr/src/dwm
 cd /usr/src/dwm
 sudo git checkout 44dbc68
+sudo git apply $DF/dwm/dwm-sticky-20260910.diff
 sudo cp $DF/dwm/config.h .
 sudo make install
 
