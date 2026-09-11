@@ -1,0 +1,4 @@
+# venv весит ~770 МБ и пересоздаётся из requirements.txt через setup.sh
+venv/
+__pycache__/
+*.pyc

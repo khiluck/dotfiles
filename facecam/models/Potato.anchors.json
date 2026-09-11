@@ -1,0 +1,16 @@
+{
+  "_comment": "У картошки глаз нет — точки привязки НАЗНАЧЕНЫ генератором tools/make_potato.py, а не найдены.",
+  "model": "Potato.glb",
+  "eye_x_pos": [
+    0.3251,
+    0.1567,
+    0.7567
+  ],
+  "eye_x_neg": [
+    -0.3146,
+    0.1517,
+    0.7322
+  ],
+  "found_by": "make_potato.py --eye-dx 0.3 --eye-y 0.17",
+  "margin": 1.6
+}
