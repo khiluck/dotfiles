@@ -18,7 +18,7 @@ import trimesh
 from PIL import Image
 
 
-def lumpy_sphere(subdiv=4, axes=(1.0, 0.78, 0.82), bumps=6, amp=0.13, seed=7):
+def lumpy_sphere(subdiv=4, axes=(0.72, 1.0, 0.78), bumps=6, amp=0.13, seed=7):
     """Бугристый эллипсоид."""
     rng = np.random.default_rng(seed)
     m = trimesh.creation.icosphere(subdivisions=subdiv, radius=1.0)
@@ -77,12 +77,21 @@ def main():
     ap.add_argument("--out", default="models/Potato.glb")
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--subdiv", type=int, default=4)
+    # Оси эллипсоида X,Y,Z. Y — высота. Больше Y, чем X, — картошка стоя;
+    # наоборот — лежачий блин, с которого всё начиналось.
+    ap.add_argument("--axes", default="0.72,1.0,0.78",
+                    help="полуоси эллипсоида X,Y,Z (Y — высота)")
+    ap.add_argument("--amp", type=float, default=0.13,
+                    help="высота бугров: 0 — гладкое яйцо, 0.2 — корявая")
+    ap.add_argument("--bumps", type=int, default=6,
+                    help="сколько волн задают бугристость")
     # Куда посадить глаза и рот. Картошка смотрит в +Z (как Suzanne).
     ap.add_argument("--eye-dx", type=float, default=0.30, help="разнос глаз по X")
     ap.add_argument("--eye-y",  type=float, default=0.17, help="высота глаз")
     a = ap.parse_args()
 
-    m = lumpy_sphere(subdiv=a.subdiv, seed=a.seed)
+    m = lumpy_sphere(subdiv=a.subdiv, seed=a.seed, amp=a.amp, bumps=a.bumps,
+                     axes=tuple(float(x) for x in a.axes.split(",")))
     v = np.asarray(m.vertices, float)
     uv = spherical_uv(v)
     tex = potato_texture(seed=a.seed)
@@ -111,7 +120,9 @@ def main():
                "model": a.out.rsplit("/", 1)[-1],
                "eye_x_pos": [round(float(x), 4) for x in eye_pos],
                "eye_x_neg": [round(float(x), 4) for x in eye_neg],
-               "found_by": f"make_potato.py --eye-dx {a.eye_dx} --eye-y {a.eye_y}"},
+               "margin": 1.35,
+               "found_by": f"make_potato.py --axes {a.axes} --amp {a.amp} "
+                           f"--seed {a.seed} --eye-dx {a.eye_dx} --eye-y {a.eye_y}"},
               open(p, "w"), indent=2, ensure_ascii=False)
     print(f"{p}: глаза {np.round(eye_pos,3)} и {np.round(eye_neg,3)}")
 
