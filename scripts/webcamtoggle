@@ -1,21 +1,22 @@
 #!/bin/bash
 #
-# Два режима:
-#   webcamtoggle           обычная камера как есть      (Win+q)
-#   webcamtoggle facecam   3D-модель + настоящие глаза и рот (Win+Shift+q)
+# Окошко-оверлей с камерой (Win+q).
 #
-# Режимы делят один флаг /tmp/webcam и одно окно, потому что камера одна:
-# любое нажатие, когда что-то запущено, это выключает.
+# Источник выбирается сам: если фоновый facecam запущен и отдаёт поток, берём
+# его (в кадре 3D-модель вместо головы), иначе обычную камеру. Сам facecam этот
+# скрипт НЕ трогает — он живёт отдельно, включается по Win+Shift+q
+# (facecamtoggle) и переживает закрытие окошка.
 
-MODE="${1:-plain}"
-
-# facecam: подменяет голову 3D-моделью и отдаёт результат в /dev/video10
-FC=/home/aex/Work/dotfiles/facecam
-FC_MODEL=$FC/models/Watermelon.glb
-FC_BG=$FC/assets/backgrounds/watermelone.png
 VCAM=/dev/video10
-# по этому шаблону facecam ищется для остановки
-FC_PAT="facecam\.py avatar"
+
+# Признак того, что facecam отдаёт поток. Точный: при exclusive_caps=1
+# устройство объявляет себя Video Output, пока в него никто не пишет, и
+# переключается на Video Capture, когда поток пошёл. Проверяем состояние
+# устройства, а не файл-флаг: флаг может остаться от упавшего процесса.
+vcam_ready(){
+	v4l2-ctl -d "$VCAM" --all 2>/dev/null \
+		| grep -A2 "Device Caps" | grep -q "Video Capture"
+}
 
 # отступ окна камеры от краёв экрана, px (как у блогеров — не впритык)
 MARGIN=28
@@ -55,31 +56,11 @@ start_webcam(){
 	# Чёткость и «объём» поднимаем в самой камере (ISP): sharpness и contrast по
 	# умолчанию стоят низко (0 и 32) — отсюда «замыленность». Это даёт больше,
 	# чем любое повышение разрешения. power_line_frequency уже 50 Гц (без мерцания).
-	# Настройки сенсора нужны в обоих режимах: facecam читает ту же /dev/video0.
 	v4l2-ctl -d /dev/video0 --set-ctrl=sharpness=5 --set-ctrl=contrast=48 2>/dev/null || true
 
 	local src=/dev/video0
 	local mirror=(-vf hflip)
-
-	if [ "$MODE" = facecam ]; then
-		# В ФОНЕ (&): facecam работает до сигнала, и без & скрипт завис бы
-		# здесь навсегда — до mpv дело бы просто не дошло.
-		"$FC/venv/bin/python" "$FC/facecam.py" avatar \
-		    --model "$FC_MODEL" --background "$FC_BG" \
-		    >/tmp/facecam.log 2>&1 &
-
-		# Ждём, пока facecam реально начнёт писать: ему нужно ~2.5 с на модель
-		# MediaPipe, GL-контекст и открытие камеры. Признак точный — при
-		# exclusive_caps=1 устройство объявляет себя Video Output, пока в него
-		# никто не пишет, и переключается на Video Capture, когда поток пошёл.
-		# Без ожидания mpv откроет пустое устройство.
-		local i
-		for i in $(seq 1 60); do
-			v4l2-ctl -d "$VCAM" --all 2>/dev/null \
-				| grep -A2 "Device Caps" | grep -q "Video Capture" && break
-			sleep 0.2
-		done
-
+	if vcam_ready; then
 		src=$VCAM
 		mirror=()   # facecam зеркалит сам, второй переворот вернул бы прямую картинку
 	fi
@@ -97,17 +78,15 @@ start_webcam(){
 
 stop_webcam(){
 	rm -f /tmp/webcam && refbar
-	# SIGTERM, а не SIGINT: процесс, запущенный в фоне через & из
-	# неинтерактивного шелла, по POSIX наследует SIGINT как игнорируемый, и
-	# pkill -2 до него не доходит. SIGKILL не годится — не даст закрыть
-	# устройства, и /dev/video0 останется занятой.
+	# SIGTERM, а не SIGINT: если скрипт сам запущен в фоне неинтерактивного
+	# шелла, его потомки наследуют SIGINT как игнорируемый и -2 до них не
+	# доходит. facecam тут НЕ останавливаем — он живёт своей жизнью.
 	pkill -TERM -x mpv
-	pkill -TERM -f "$FC_PAT"   # безвредно, если facecam не запускался
 }
 
 
-# Переключаем по флагу, а не по коду возврата pkill: иначе при упавшем facecam
-# скрипт мог запустить второй экземпляр поверх убиваемого.
+# Переключаем по флагу, а не по коду возврата pkill: иначе состояние зависело бы
+# от того, нашёлся ли процесс, и могло разъехаться.
 if [ -e /tmp/webcam ]; then
 	stop_webcam
 else

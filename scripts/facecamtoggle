@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# Включает и выключает facecam как ФОНОВУЮ камеру (Win+Shift+q).
+#
+# Окна не показывает: facecam просто пишет обработанный поток в /dev/video10,
+# и его можно выбрать камерой в Teams, браузере и где угодно ещё. Окошко-оверлей
+# — это отдельная история, webcamtoggle (Win+q); он сам подхватит facecam, если
+# тот запущен.
+
+FC=/home/aex/Work/dotfiles/facecam
+FC_MODEL=$FC/models/Watermelon.glb
+FC_BG=$FC/assets/backgrounds/watermelone.png
+VCAM=/dev/video10
+LOG=/tmp/facecam.log
+FLAG=/tmp/facecam
+# по этому шаблону facecam ищется для остановки
+FC_PAT="facecam\.py avatar"
+
+# Признак того, что facecam реально отдаёт поток. Точный: при exclusive_caps=1
+# устройство объявляет себя Video Output, пока в него никто не пишет, и
+# переключается на Video Capture, когда поток пошёл.
+vcam_ready(){
+	v4l2-ctl -d "$VCAM" --all 2>/dev/null \
+		| grep -A2 "Device Caps" | grep -q "Video Capture"
+}
+
+start_facecam(){
+	# Настройки сенсора: facecam читает ту же /dev/video0.
+	v4l2-ctl -d /dev/video0 --set-ctrl=sharpness=5 --set-ctrl=contrast=48 2>/dev/null || true
+
+	# setsid — чтобы демон пережил завершение этого скрипта и не зависел от
+	# сессии, из которой его запустили.
+	setsid "$FC/venv/bin/python" "$FC/facecam.py" avatar \
+	    --model "$FC_MODEL" --background "$FC_BG" \
+	    >"$LOG" 2>&1 &
+
+	# Ждём готовности: ~2.5 с на модель MediaPipe, GL-контекст и камеру.
+	local i
+	for i in $(seq 1 60); do
+		vcam_ready && break
+		sleep 0.2
+	done
+
+	if vcam_ready; then
+		touch "$FLAG" && refbar
+		notify-send -t 2500 "facecam" "Виртуальная камера запущена.\nВыбери камеру «facecam» в приложении."
+	else
+		# Не оставляем флаг и молчаливо упавший процесс.
+		pkill -TERM -f "$FC_PAT"
+		rm -f "$FLAG" && refbar
+		notify-send -u critical "facecam не запустился" "Подробности: $LOG"
+	fi
+}
+
+stop_facecam(){
+	# SIGTERM, а не SIGINT: процесс, запущенный в фоне через & из
+	# неинтерактивного шелла, по POSIX наследует SIGINT как игнорируемый, и
+	# pkill -2 до него не доходит. SIGKILL не годится — не даст закрыть
+	# устройства, и /dev/video0 останется занятой.
+	pkill -TERM -f "$FC_PAT"
+	rm -f "$FLAG" && refbar
+}
+
+# Состояние определяем по живому процессу, а не по флагу: флаг может остаться
+# от упавшего facecam, и тогда включить его было бы уже нельзя.
+if pgrep -f "$FC_PAT" >/dev/null; then
+	stop_facecam
+else
+	start_facecam
+fi

@@ -123,9 +123,11 @@ static Key keys[] = {
 	{ WINKEY,		                XK_p,      spawn,          SHCMD("pass.sh") },
 	{ WINKEY,		                XK_w,      spawn,          SHCMD("screencast") },
 	{ WINKEY,		                XK_q,      spawn,          SHCMD("webcamtoggle") },
-	/* Win+Shift+q — то же окно камеры, но через facecam: вместо головы
-	   3D-модель, глаза и рот настоящие. См. ~/Work/dotfiles/facecam. */
-	{ WINKEY|ShiftMask,	                XK_q,      spawn,          SHCMD("webcamtoggle facecam") },
+	/* Win+Shift+q — включить/выключить фоновый facecam: виртуальная камера,
+	   где вместо головы 3D-модель, а глаза и рот настоящие. Окна не открывает,
+	   выбирается камерой "facecam" в Teams и браузере. Индикатор 🎭 на баре.
+	   Окошко-оверлей — это Win+q, оно само подхватит facecam, если он включён. */
+	{ WINKEY|ShiftMask,	                XK_q,      spawn,          SHCMD("facecamtoggle") },
 	{ WINKEY,						XK_m,		spawn,			SHCMD("st -e sudo mc") },
 	{ WINKEY,						XK_grave,	spawn,			SHCMD("dmenuunicode") },
 	{ WINKEY,						XK_space,	spawn,			SHCMD("swlayout") },
