@@ -123,6 +123,9 @@ static Key keys[] = {
 	{ WINKEY,		                XK_p,      spawn,          SHCMD("pass.sh") },
 	{ WINKEY,		                XK_w,      spawn,          SHCMD("screencast") },
 	{ WINKEY,		                XK_q,      spawn,          SHCMD("webcamtoggle") },
+	/* Win+Shift+q — то же окно камеры, но через facecam: вместо головы
+	   3D-модель, глаза и рот настоящие. См. ~/Work/dotfiles/facecam. */
+	{ WINKEY|ShiftMask,	                XK_q,      spawn,          SHCMD("webcamtoggle facecam") },
 	{ WINKEY,						XK_m,		spawn,			SHCMD("st -e sudo mc") },
 	{ WINKEY,						XK_grave,	spawn,			SHCMD("dmenuunicode") },
 	{ WINKEY,						XK_space,	spawn,			SHCMD("swlayout") },
