@@ -5,13 +5,19 @@
 временные метки в миллисекундах.
 """
 import math
+import os
+
 import numpy as np
 from mediapipe import Image, ImageFormat
 from mediapipe.tasks.python import BaseOptions, vision
 
 import regions
 
-MODEL = "assets/face_landmarker.task"
+# Путь считаем от каталога САМОГО МОДУЛЯ, а не от рабочего каталога: иначе
+# запуск откуда угодно, кроме папки проекта (например, по хоткею из dwm),
+# валится с FileNotFoundError на модели MediaPipe.
+MODEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     "assets", "face_landmarker.task")
 
 
 class Pose:

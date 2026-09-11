@@ -6,12 +6,31 @@
   track        то же + разметка лица поверх (видно, что трекер жив)
   avatar       рабочий режим: 3D-модель + настоящие глаза и рот
 """
-import argparse, sys, time
+import argparse, os, signal, sys, time
 import cv2
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 from tracker import Tracker
 from vcam import VCam, ensure_module
 import regions
+
+
+def install_signals():
+    """Сделать процесс останавливаемым сигналом.
+
+    Запуск в фоне через `&` из НЕинтерактивного шелла (а именно так facecam
+    стартует из webcamtoggle по хоткею) приводит к тому, что SIGINT и SIGQUIT
+    наследуются как SIG_IGN — этого требует POSIX, — а Python такое наследование
+    сохраняет. Проверено на живом процессе: SIGINT висел в SigIgn из
+    /proc/<pid>/status, и `pkill -2` не убивал facecam вообще, из-за чего
+    /dev/video0 оставалась занятой после выключения.
+
+    Поэтому SIGINT переустанавливаем явно, а SIGTERM обрабатываем сами, чтобы
+    отработал блок finally и камера с виртуальным устройством закрылись.
+    """
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+    signal.signal(signal.SIGTERM, lambda *_: (_ for _ in ()).throw(KeyboardInterrupt))
 
 
 def open_camera(device, w, h):
@@ -26,7 +45,8 @@ def open_camera(device, w, h):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", choices=["passthrough", "track", "avatar"])
-    ap.add_argument("--model", default="models/Suzanne.gltf")
+    ap.add_argument("--model",
+                    default=os.path.join(HERE, "models", "Suzanne.gltf"))
     ap.add_argument("--anchors", default=None,
                     help="по умолчанию <модель>.anchors.json рядом с моделью")
     ap.add_argument("--margin", type=float, default=None,
@@ -56,6 +76,8 @@ def main():
     ap.add_argument("--mirror", action="store_true", default=True,
                     help="зеркалить, как в webcamtoggle")
     a = ap.parse_args()
+
+    install_signals()
 
     w, h = (int(x) for x in a.size.split("x"))
     ensure_module(int(a.out.rsplit("video", 1)[1]))

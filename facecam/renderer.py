@@ -12,11 +12,16 @@
 
 Контекст standalone (EGL/GLX без окна), поэтому работает и без X-сессии.
 """
+import os
+
 import numpy as np
 import moderngl
 import trimesh
 
-MODEL = "models/Suzanne.gltf"
+# Как и в tracker.py — от каталога модуля, чтобы работало при запуске
+# из любого места.
+MODEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     "models", "Suzanne.gltf")
 
 # Y модели вверх, Y изображения вниз
 _FLIP_Y = np.diag([1.0, -1.0, 1.0]).astype("f4")
