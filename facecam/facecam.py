@@ -36,7 +36,9 @@ def main():
                     help="расширение вырезки глаз, px (можно отрицательное)")
     ap.add_argument("--dilate-lips", type=int, default=None,
                     help="расширение вырезки губ, px (0 — ровно по кайме губ)")
-    ap.add_argument("--feather", type=int, default=3)
+    ap.add_argument("--feather", type=int, default=None,
+                    help="радиус растушёвки края вырезки, px "
+                         "(по умолчанию из compose.FEATHER)")
     ap.add_argument("--zoom-eyes", type=float, default=None,
                     help="увеличение вырезки глаз относительно их центра")
     ap.add_argument("--background", default="real",
@@ -108,7 +110,9 @@ def main():
                                                else bg(bgr),
                                           clip=not a.no_clip,
                                           margin=a.margin, dilate=dilate,
-                                          zoom=zoom, feather=a.feather)
+                                          zoom=zoom,
+                                          **({} if a.feather is None
+                                             else {'feather': a.feather}))
                         else:
                             cv2.polylines(bgr, face.polygons(regions.KEEP_REAL),
                                           True, (0, 255, 0), 1)

@@ -33,6 +33,11 @@ DILATE = {"left_eye": 0, "right_eye": 0, "lips": -2}
 # рассинхронизировало бы его с положением на модели.
 ZOOM = {"left_eye": 1.18, "right_eye": 1.18, "lips": 1.0}
 
+# Радиус растушёвки края вырезки, px. Осторожно с большими значениями: глаз
+# мал, и ядро размытия, сопоставимое с ним, съедает не только край, но и сам
+# глаз — маска перестаёт доходить до 255, и сквозь глаз просвечивает модель.
+FEATHER = 6
+
 
 def load_anchors(path):
     """Точки привязки модели плюс её собственный масштаб по умолчанию.
@@ -75,15 +80,18 @@ def _fill(mask, polys, off):
         cv2.fillPoly(mask, [p - off], 255)
 
 
+def _disc(r):
+    return cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (abs(r) * 2 + 1,) * 2)
+
+
 def _morph(mask, d):
     if d == 0:
         return mask
-    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (abs(d) * 2 + 1,) * 2)
-    return cv2.dilate(mask, k) if d > 0 else cv2.erode(mask, k)
+    return cv2.dilate(mask, _disc(d)) if d > 0 else cv2.erode(mask, _disc(d))
 
 
 def real_layer(face, bgr, roi, names=regions.KEEP_REAL,
-               dilate=None, zoom=None, feather=3):
+               dilate=None, zoom=None, feather=FEATHER):
     """Слой настоящих глаз и рта: (картинка BGR в ROI, маска 0..1 в ROI).
 
     Каждая область обрабатывается в своей маленькой рамке — так и дешевле, и
@@ -139,7 +147,12 @@ def real_layer(face, bgr, roi, names=regions.KEEP_REAL,
         src = (slice(iy0 - by0, iy1 - by0), slice(ix0 - bx0, ix1 - bx0))
 
         sm = part[src]
-        np.copyto(layer[dst], img[src], where=sm[:, :, None] > 0)
+        # Пиксели кладём ШИРЕ маски — на радиус растушёвки. Иначе в полосе,
+        # где маска уже не 0, но ещё не 255, слой остаётся чёрным, это чёрное
+        # подмешивается к модели и по краю вырезки идёт тёмная обводка.
+        # Проверено: в полосе растушёвки было 53% чёрных пикселей.
+        wide = cv2.dilate(part, _disc(feather + 1))[src] if feather else sm
+        np.copyto(layer[dst], img[src], where=wide[:, :, None] > 0)
         np.maximum(mask[dst], sm, out=mask[dst])
 
     if feather:
@@ -148,7 +161,7 @@ def real_layer(face, bgr, roi, names=regions.KEEP_REAL,
     return layer, mask
 
 
-def real_mask(face, shape, names=regions.KEEP_REAL, dilate=None, feather=3,
+def real_mask(face, shape, names=regions.KEEP_REAL, dilate=None, feather=FEATHER,
               roi=None, zoom=None):
     """Только маска — для отладки и подбора значений."""
     if roi is None:
@@ -176,7 +189,7 @@ def _roi(bgr, face, center, size, aspect, pad):
 
 def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
             margin=None, dy=0.0, dx=0.0,
-            dilate=None, zoom=None, feather=3, signs=(1, 1, 1)):
+            dilate=None, zoom=None, feather=FEATHER, signs=(1, 1, 1)):
     """Собирает итоговый кадр из трёх слоёв.
 
     Модель сажается по ЯКОРЯМ: её глаза совмещаются с настоящими. Посадка по
