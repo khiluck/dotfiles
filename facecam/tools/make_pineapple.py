@@ -332,8 +332,10 @@ def main():
     # Лицо. eye-y — доля высоты ТЕЛА (без хохолка): 1.0 у самой макушки тела.
     ap.add_argument("--eye-dx", type=float, default=0.30)
     ap.add_argument("--eye-y", type=float, default=0.74)
-    ap.add_argument("--margin", type=float, default=1.9)
-    ap.add_argument("--lift-lips", type=float, default=0.55)
+    # Умолчания должны совпадать с тем, что лежит в models/*.anchors.json:
+    # иначе перегенерация без ключей молча даёт другую модель.
+    ap.add_argument("--margin", type=float, default=0.95)
+    ap.add_argument("--lift-lips", type=float, default=0.48)
     a = ap.parse_args()
 
     v, f, n, uv, tex, frac = build(a.nu, a.nv, a.amp, a.sharp, a.tex_sharp,
