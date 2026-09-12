@@ -46,7 +46,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", choices=["passthrough", "track", "avatar"])
     ap.add_argument("--model",
-                    default=os.path.join(HERE, "models", "Suzanne.gltf"))
+                    default=os.path.join(HERE, "models", "Pineapple.glb"))
     ap.add_argument("--anchors", default=None,
                     help="по умолчанию <модель>.anchors.json рядом с моделью")
     ap.add_argument("--margin", type=float, default=None,

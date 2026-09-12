@@ -17,13 +17,29 @@
 # мгновенное переключение содержимого окошка.
 
 FC=/home/aex/Work/dotfiles/facecam
-FC_MODEL=$FC/models/Watermelon.glb
-FC_BG=$FC/assets/backgrounds/watermelone.png
+FC_MODEL=$FC/models/Pineapple.glb
+FC_BG=$FC/assets/backgrounds/beach.jpg
 VCAM=/dev/video10
 LOG=/tmp/facecam.log
 FLAG=/tmp/facecam
 # по этому шаблону facecam ищется для остановки
 FC_PAT="facecam\.py avatar"
+
+# PID-ы настоящего facecam.
+#
+# Просто `pgrep -f "$FC_PAT"` не годится: он ловит любой процесс, у которого эта
+# строка лишь упомянута в командной строке — терминал, запускающий facecam
+# руками, обёртку, соседний скрипт. Тогда переключатель «видит» камеру, которой
+# нет, и шлёт SIGTERM постороннему процессу. Поэтому отсеиваем по имени
+# исполняемого файла: настоящий facecam — это python.
+facecam_pids(){
+	local p
+	for p in $(pgrep -f "$FC_PAT" 2>/dev/null); do
+		case "$(cat /proc/$p/comm 2>/dev/null)" in
+			python*) printf '%s ' "$p" ;;
+		esac
+	done
+}
 
 # Признак того, что facecam реально отдаёт поток. Точный: при exclusive_caps=1
 # устройство объявляет себя Video Output, пока в него никто не пишет, и
@@ -72,7 +88,7 @@ start_facecam(){
 		notify-send -t 2500 "facecam" "Виртуальная камера запущена.\nВыбери камеру «facecam» в приложении."
 	else
 		# Не оставляем флаг и молчаливо упавший процесс.
-		pkill -TERM -f "$FC_PAT"
+		local p; p=$(facecam_pids); [ -n "$p" ] && kill -TERM $p
 		rm -f "$FLAG" && refbar
 		notify-send -u critical "facecam не запустился" "Подробности: $LOG"
 	fi
@@ -83,13 +99,13 @@ stop_facecam(){
 	# неинтерактивного шелла, по POSIX наследует SIGINT как игнорируемый, и
 	# pkill -2 до него не доходит. SIGKILL не годится — не даст закрыть
 	# устройства, и /dev/video0 останется занятой.
-	pkill -TERM -f "$FC_PAT"
+	local p; p=$(facecam_pids); [ -n "$p" ] && kill -TERM $p
 	rm -f "$FLAG" && refbar
 	# Ждём фактической смерти: иначе открытое следом окошко увидит /dev/video10
 	# ещё живым и снова сядет на умирающий источник.
 	local i
 	for i in $(seq 1 30); do
-		pgrep -f "$FC_PAT" >/dev/null || break
+		[ -z "$(facecam_pids)" ] && break
 		sleep 0.2
 	done
 }
@@ -100,7 +116,7 @@ reopen=no
 
 # Состояние определяем по живому процессу, а не по флагу: флаг может остаться
 # от упавшего facecam, и тогда включить его было бы уже нельзя.
-if pgrep -f "$FC_PAT" >/dev/null; then
+if [ -n "$(facecam_pids)" ]; then
 	stop_facecam
 else
 	start_facecam
