@@ -61,11 +61,11 @@ def main():
                          "(по умолчанию из compose.FEATHER)")
     ap.add_argument("--zoom-eyes", type=float, default=None,
                     help="увеличение вырезки глаз относительно их центра")
-    ap.add_argument("--bend-amount", type=float, default=None,
-                    help="0 — модель поворачивается жёстко, 1 — низ стоит, "
-                         "а верх наклоняется и скручивается")
-    ap.add_argument("--bend-strength", type=float, default=None,
-                    help="множитель угла наверху; >1 гнёт сильнее головы")
+    ap.add_argument("--bend-base", type=float, default=None,
+                    help="доля угла внизу: 0 — низ памятник, 1 — крутится "
+                         "наравне с головой")
+    ap.add_argument("--bend-top", type=float, default=None,
+                    help="доля угла наверху: >1 — макушка гнётся сильнее головы")
     ap.add_argument("--bend-curve", type=float, default=None,
                     help=">1 — изгиб копится ближе к макушке")
     ap.add_argument("--lift-lips", type=float, default=None,
@@ -115,7 +115,7 @@ def main():
         lift = None if a.lift_lips is None else {"lips": a.lift_lips}
 
         bend_over = {k: v for k, v in
-                     (("amount", a.bend_amount), ("strength", a.bend_strength),
+                     (("base", a.bend_base), ("top", a.bend_top),
                       ("curve", a.bend_curve)) if v is not None}
         if a.dilate_eyes is not None:
             dilate["left_eye"] = dilate["right_eye"] = a.dilate_eyes

@@ -28,12 +28,15 @@ MODEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 _FLIP_Y = np.diag([1.0, -1.0, 1.0]).astype("f4")
 
 # Изгиб: поворот головы применяется тем сильнее, чем выше вершина.
-#   amount   0 — жёсткий поворот всей модели (как было), 1 — полный изгиб
-#   curve    >1 — изгиб копится ближе к макушке, низ почти не шевелится
-#   strength множитель угла наверху; >1 — гнём сильнее, чем повёрнута голова
-#   y0, y1   в нормированных координатах модели: -1 это низ, +1 макушка.
-#            y0 — ещё и точка опоры, вокруг которой всё вращается.
-BEND = {"amount": 0.0, "curve": 1.6, "strength": 1.0, "y0": -1.0, "y1": 1.0}
+# Доля угла растёт от base внизу до top наверху по кривой curve.
+#   base   доля угла ВНИЗУ. 0 — низ стоит памятником, 1 — крутится наравне с
+#          головой. Немного больше нуля — тело подкручивается, а не стоит колом.
+#   top    доля угла НАВЕРХУ. >1 — макушка гнётся сильнее, чем повёрнута голова.
+#   curve  >1 — изгиб копится ближе к макушке.
+#   y0,y1  в нормированных координатах модели: -1 низ, +1 макушка.
+#          y0 — ещё и точка опоры, вокруг которой всё вращается.
+# base=1, top=1 — прежнее поведение, жёсткий поворот всей модели.
+BEND = {"base": 0.30, "top": 2.2, "curve": 2.2, "y0": -1.0, "y1": 1.0}
 
 
 def _aa_matrix(a, ang):
@@ -49,7 +52,7 @@ def _aa_matrix(a, ang):
 
 def _bend_weight(y, b):
     h = np.clip((y - b["y0"]) / max(b["y1"] - b["y0"], 1e-6), 0.0, 1.0)
-    return ((1.0 - b["amount"]) + b["amount"] * h ** b["curve"]) * b["strength"]
+    return b["base"] + (b["top"] - b["base"]) * h ** b["curve"]
 
 
 def bend_point(p, axis, ang, b):
@@ -74,8 +77,8 @@ uniform float b_ang;      // полный угол поворота, рад
 uniform float b_y0;       // высота, ниже которой ничего не двигается (точка опоры)
 uniform float b_y1;       // высота, где поворот достигает полного
 uniform float b_curve;    // форма нарастания: >1 — изгиб копится ближе к макушке
-uniform float b_amount;   // 0 — жёсткий поворот как раньше, 1 — полный изгиб
-uniform float b_strength; // множитель угла наверху (можно усилить сверх головы)
+uniform float b_base;     // доля угла ВНИЗУ: 0 — низ памятник, 1 — крутится как голова
+uniform float b_top;      // доля угла НАВЕРХУ: >1 — гнём сильнее головы
 
 in vec3 in_vert;
 in vec3 in_norm;
@@ -94,8 +97,10 @@ mat3 axis_angle(vec3 a, float ang) {
 
 void main() {
     float h = clamp((in_vert.y - b_y0) / max(b_y1 - b_y0, 1e-6), 0.0, 1.0);
+    // Доля угла растёт от b_base внизу до b_top наверху. Два независимых
+    // числа, а не «сила» на всё сразу: иначе поднять низ нельзя, не утянув верх.
     float shaped = pow(h, b_curve);
-    float w = ((1.0 - b_amount) + b_amount * shaped) * b_strength;
+    float w = b_base + (b_top - b_base) * shaped;
 
     mat3 Rb = axis_angle(b_axis, b_ang * w);
     vec3 pivot = vec3(0.0, b_y0, 0.0);
@@ -277,7 +282,7 @@ class Renderer:
         self.prog["nrm"].write(np.ascontiguousarray(_FLIP_Y.T, "f4"))
         self.prog["b_axis"].value = tuple(float(x) for x in axis)
         self.prog["b_ang"].value = float(ang)
-        for k in ("y0", "y1", "curve", "amount", "strength"):
+        for k in ("y0", "y1", "curve", "base", "top"):
             self.prog["b_" + k].value = float(b[k])
         self.vao.render()
 
