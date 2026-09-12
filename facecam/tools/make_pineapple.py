@@ -333,7 +333,10 @@ def main():
     ap.add_argument("--eye-dx", type=float, default=0.30)
     ap.add_argument("--eye-y", type=float, default=0.74)
     ap.add_argument("--margin", type=float, default=1.9)
-    ap.add_argument("--lift-lips", type=float, default=0.55)
+    ap.add_argument("--lift-lips", type=float, default=0.48)
+    ap.add_argument("--bend-amount", type=float, default=1.0)
+    ap.add_argument("--bend-curve", type=float, default=2.2)
+    ap.add_argument("--bend-strength", type=float, default=2.2)
     a = ap.parse_args()
 
     v, f, n, uv, tex, frac = build(a.nu, a.nv, a.amp, a.sharp, a.tex_sharp,
@@ -373,6 +376,8 @@ def main():
                "eye_x_neg": [round(float(x), 4) for x in en],
                "margin": a.margin,
                "lift_lips": a.lift_lips,
+               "bend": {"amount": a.bend_amount, "curve": a.bend_curve,
+                        "strength": a.bend_strength},
                "found_by": f"make_pineapple.py --eye-dx {a.eye_dx} "
                            f"--eye-y {a.eye_y} --lift-lips {a.lift_lips}"},
               open(p, "w"), indent=2, ensure_ascii=False)
