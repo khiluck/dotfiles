@@ -278,39 +278,59 @@ def _vnormals(v, f):
     return (n / np.where(ln < 1e-12, 1.0, ln)).astype("f4")
 
 
-def crown(top_y, top_r, rings, body_frac, seed=11, scale=1.0):
-    """Хохолок: несколько колец листьев. К центру листья длиннее и прямее,
-    по краю — короче и разложены в стороны, как у настоящего."""
+# Хохолок. Листья растут ПО СПИРАЛИ из одной точки роста, а не кольцами:
+# тот же закон филлотаксиса, что и у чешуи на теле, только здесь я его сначала
+# не применил. Золотой угол между соседними листьями — 137.5 градуса.
+#
+# Длина идёт ГОРБОМ: в самом центре сидят молодые короткие листья, максимум в
+# средней зоне, а наружные (старые) короче и разложены почти горизонтально.
+# Раньше было наоборот — самые длинные в центре, и хохолок читался пучком травы.
+#
+# Лист ананаса мечевидный: отношение длины к ширине порядка 15-20, а не 3-7.
+GOLDEN = math.pi * (3.0 - math.sqrt(5.0))
+
+# Пропорции подобраны по силуэту: хохолок должен быть чуть уже плода. Лист
+# ананаса ботанически мечевидный (длина к ширине 15-20), но на кадре 640x480
+# такой лист вырождается в проволоку и хохолок расползается травой — поэтому
+# 7:1 как компромисс под наше разрешение.
+CROWN = {
+    "n": 70,            # плотность: сквозь настоящий хохолок макушку не видно
+    "length": 1.00,
+    "width": 0.150,
+    "tilt_max": 0.85,   # наклон наружного листа от вертикали, рад
+    "curve": 0.34,      # отгиб наружу к кончику
+    "droop": 0.26,      # провисание кончика
+}
+
+
+def crown(top_y, top_r, cfg, bands, seed=11, scale=1.0):
+    """Спиральная розетка листьев."""
     rng = np.random.default_rng(seed)
     V, F, UV = [], [], []
-    for (count, rad, tilt, length, width, curve, droop) in rings:
-        for k in range(count):
-            # Золотой угол между листьями — иначе кольца встают частоколом.
-            az = (k / count) * TAU + rng.uniform(-0.12, 0.12) + rad * 7.0
-            jitter = rng.uniform(0.86, 1.14)
-            base = np.array([math.sin(az) * top_r * rad, top_y - 0.02,
-                             math.cos(az) * top_r * rad])
-            v, f, uv = leaf(base, az,
-                            tilt + rng.uniform(-0.08, 0.08),
-                            length * jitter * scale,
-                            width * scale,
-                            curve, droop,
-                            keel=0.22,
-                            u0=rng.uniform(0.0, 0.94), du=0.05,
-                            body_frac=body_frac)
-            F.append(f + sum(len(x) for x in V))
-            V.append(v); UV.append(uv)
+    n = cfg["n"]
+    for i in range(n):
+        t = (i + 0.5) / n                      # 0 — центр, 1 — край
+        r = math.sqrt(t)                       # равномерная плотность по площади
+        az = i * GOLDEN + rng.uniform(-0.06, 0.06)
+
+        # горб по длине
+        ln = cfg["length"] * (0.30 + 0.70 * math.sin(math.pi * t ** 0.75))
+        ln *= rng.uniform(0.88, 1.12) * scale
+
+        v_, f_, uv_ = leaf(
+            base=np.array([math.sin(az) * top_r * r, top_y - 0.02,
+                           math.cos(az) * top_r * r]),
+            azim=az,
+            tilt=cfg["tilt_max"] * t ** 0.85 + rng.uniform(-0.07, 0.07),
+            length=ln,
+            width=cfg["width"] * (1.15 - 0.35 * t) * scale,
+            curve=cfg["curve"] * t,
+            droop=cfg["droop"] * t ** 1.3,
+            keel=0.22,
+            u0=rng.uniform(0.0, 0.94), du=0.05,
+            body_frac=bands)
+        F.append(f_ + sum(len(x) for x in V)); V.append(v_); UV.append(uv_)
     return np.vstack(V), np.vstack(F), np.vstack(UV)
-
-
-# Кольца хохолка: (сколько листьев, радиус от оси, наклон, длина, ширина,
-# отгиб наружу, провисание). К центру листья длиннее и прямее.
-RINGS = [
-    (17, 1.00, 0.95, 0.66, 0.22, 0.30, 0.26),   # наружное: короче, в стороны
-    (14, 0.76, 0.72, 0.84, 0.21, 0.22, 0.16),
-    (11, 0.52, 0.48, 1.00, 0.19, 0.13, 0.08),
-    (7,  0.26, 0.22, 1.14, 0.16, 0.06, 0.03),   # центр: длинные, почти вверх
-]
 
 
 def build(nu=160, nv=120, amp=0.065, sharp=1.7, tex_sharp=0.9,
@@ -328,7 +348,7 @@ def build(nu=160, nv=120, amp=0.065, sharp=1.7, tex_sharp=0.9,
     if with_crown:
         top_y = v[:, 1].max()
         top_r = float(profile(1.0)) * 0.72
-        cv_, cf, cuv = crown(top_y, top_r, RINGS, body_frac,
+        cv_, cf, cuv = crown(top_y, top_r, CROWN, body_frac,
                              seed=seed, scale=crown_scale)
         cn = _vnormals(cv_, cf)
         f = np.vstack([f, cf + len(v)])
