@@ -1,0 +1,17 @@
+{
+  "_comment": "Ананас сгенерирован tools/make_pineapple.py. Глаз у ананаса нет — якоря назначены.",
+  "model": "Pineapple.glb",
+  "eye_x_pos": [
+    0.2916,
+    -0.0885,
+    0.5865
+  ],
+  "eye_x_neg": [
+    -0.2902,
+    -0.0885,
+    0.5867
+  ],
+  "margin": 0.95,
+  "lift_lips": 0.55,
+  "found_by": "make_pineapple.py --eye-dx 0.3 --eye-y 0.74 --lift-lips 0.55"
+}
