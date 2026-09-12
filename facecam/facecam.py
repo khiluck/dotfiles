@@ -61,13 +61,6 @@ def main():
                          "(по умолчанию из compose.FEATHER)")
     ap.add_argument("--zoom-eyes", type=float, default=None,
                     help="увеличение вырезки глаз относительно их центра")
-    ap.add_argument("--bend-base", type=float, default=None,
-                    help="доля угла внизу: 0 — низ памятник, 1 — крутится "
-                         "наравне с головой")
-    ap.add_argument("--bend-top", type=float, default=None,
-                    help="доля угла наверху: >1 — макушка гнётся сильнее головы")
-    ap.add_argument("--bend-curve", type=float, default=None,
-                    help=">1 — изгиб копится ближе к макушке")
     ap.add_argument("--lift-lips", type=float, default=None,
                     help="поднять рот к глазам, в долях расстояния глаза-рот "
                          "(0 — оставить на месте, 0.25 — на четверть пути)")
@@ -113,10 +106,6 @@ def main():
 
         # По умолчанию берём из якорей модели; ключ только для подбора.
         lift = None if a.lift_lips is None else {"lips": a.lift_lips}
-
-        bend_over = {k: v for k, v in
-                     (("base", a.bend_base), ("top", a.bend_top),
-                      ("curve", a.bend_curve)) if v is not None}
         if a.dilate_eyes is not None:
             dilate["left_eye"] = dilate["right_eye"] = a.dilate_eyes
         if a.dilate_lips is not None:
@@ -150,8 +139,6 @@ def main():
                                           clip=not a.no_clip,
                                           margin=a.margin, dilate=dilate,
                                           zoom=zoom, lift=lift,
-                                          bend=(dict(anchors.bend, **bend_over)
-                                                if bend_over else None),
                                           **({} if a.feather is None
                                              else {'feather': a.feather}))
                         else:

@@ -67,7 +67,7 @@ FEATHER = 4
 # Всё, что зависит от конкретной модели, живёт в её .anchors.json, а не в ключах
 # запуска: помнить руками, что одной модели нужен один масштаб и подъём рта, а
 # другой — другой, бессмысленно.
-Anchors = namedtuple("Anchors", "a b margin lift bend")
+Anchors = namedtuple("Anchors", "a b margin lift")
 
 
 def load_anchors(path):
@@ -76,8 +76,7 @@ def load_anchors(path):
     return Anchors(np.array(d["eye_x_pos"], "f4"),
                    np.array(d["eye_x_neg"], "f4"),
                    float(d.get("margin", 1.0)),
-                   float(d.get("lift_lips", LIFT.get("lips", 0.0))),
-                   dict(d.get("bend", {})))
+                   float(d.get("lift_lips", LIFT.get("lips", 0.0))))
 
 
 def eye_centers(face):
@@ -224,7 +223,7 @@ def _roi(bgr, face, center, size, aspect, pad):
 
 
 def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
-            margin=None, dy=0.0, dx=0.0, lift=None, bend=None,
+            margin=None, dy=0.0, dx=0.0, lift=None,
             dilate=None, zoom=None, feather=FEATHER, signs=(1, 1, 1)):
     """Собирает итоговый кадр из трёх слоёв.
 
@@ -239,10 +238,9 @@ def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
     """
     a_px, b_px = eye_centers(face)
 
-    bend = anchors.bend if bend is None else bend
-    center, size = renderer.fit_by_eyes(
-        face.pose, anchors.a, anchors.b, a_px, b_px, signs,
-        anchors.margin if margin is None else margin, bend=bend)
+    center, size = renderer.fit_by_eyes(face.pose, anchors.a, anchors.b,
+                                        a_px, b_px, signs,
+                                        anchors.margin if margin is None else margin)
     if center is None:
         # Голова почти в профиль, якоря слиплись. Отдаём фон, а НЕ настоящий
         # кадр: иначе при повороте головы в эфир уходит живое лицо.
@@ -259,7 +257,7 @@ def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
             c = np.vstack(face.polygons([nm])).mean(0)
             offsets[nm] = (eye_mid - c) * float(frac)
 
-    rgb, alpha = renderer.render(face.pose, center, size, *signs, bend=bend)
+    rgb, alpha = renderer.render(face.pose, center, size, *signs)
 
     # Всё смешивание — только внутри ROI. Полнокадровая арифметика в float32
     # стоила ~27 мс на кадр и роняла частоту вдвое; модель занимает малую часть

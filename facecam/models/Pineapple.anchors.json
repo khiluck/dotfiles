@@ -13,10 +13,5 @@
   ],
   "margin": 0.95,
   "lift_lips": 0.48,
-  "found_by": "make_pineapple.py --eye-dx 0.3 --eye-y 0.74 --lift-lips 0.48",
-  "bend": {
-    "base": 0.35,
-    "top": 2.2,
-    "curve": 2.2
-  }
+  "found_by": "make_pineapple.py --eye-dx 0.3 --eye-y 0.74 --lift-lips 0.48"
 }

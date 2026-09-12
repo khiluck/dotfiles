@@ -12,7 +12,6 @@
 
 Контекст standalone (EGL/GLX без окна), поэтому работает и без X-сессии.
 """
-import math
 import os
 
 import numpy as np
@@ -27,87 +26,18 @@ MODEL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 # Y модели вверх, Y изображения вниз
 _FLIP_Y = np.diag([1.0, -1.0, 1.0]).astype("f4")
 
-# Изгиб: поворот головы применяется тем сильнее, чем выше вершина.
-# Доля угла растёт от base внизу до top наверху по кривой curve.
-#   base   доля угла ВНИЗУ. 0 — низ стоит памятником, 1 — крутится наравне с
-#          головой. Немного больше нуля — тело подкручивается, а не стоит колом.
-#   top    доля угла НАВЕРХУ. >1 — макушка гнётся сильнее, чем повёрнута голова.
-#   curve  >1 — изгиб копится ближе к макушке.
-#   y0,y1  в нормированных координатах модели: -1 низ, +1 макушка.
-#          y0 — ещё и точка опоры, вокруг которой всё вращается.
-# base=1, top=1 — прежнее поведение, жёсткий поворот всей модели.
-BEND = {"base": 0.30, "top": 2.2, "curve": 2.2, "y0": -1.0, "y1": 1.0}
-
-
-def _aa_matrix(a, ang):
-    """Матрица поворота вокруг оси a на угол ang (формула Родрига)."""
-    c, s = math.cos(ang), math.sin(ang)
-    t = 1.0 - c
-    x, y, z = a
-    return np.array([
-        [t*x*x + c,   t*x*y - s*z, t*x*z + s*y],
-        [t*x*y + s*z, t*y*y + c,   t*y*z - s*x],
-        [t*x*z - s*y, t*y*z + s*x, t*z*z + c]], "f4")
-
-
-def _bend_weight(y, b):
-    h = np.clip((y - b["y0"]) / max(b["y1"] - b["y0"], 1e-6), 0.0, 1.0)
-    return b["base"] + (b["top"] - b["base"]) * h ** b["curve"]
-
-
-def bend_point(p, axis, ang, b):
-    """Та же деформация, что в шейдере, но на CPU — для точек привязки.
-
-    Без этого глаза уезжают с модели: вершины гнутся, а якоря считались бы по
-    жёсткому повороту.
-    """
-    w = _bend_weight(float(p[1]), b)
-    pivot = np.array([0.0, b["y0"], 0.0], "f4")
-    return pivot + _aa_matrix(axis, ang * w) @ (np.asarray(p, "f4") - pivot)
-
 VERT = """
 #version 330
 uniform mat4 mvp;
 uniform mat3 nrm;
-
-// Изгиб: поворот головы применяется НЕ ко всей модели целиком, а тем сильнее,
-// чем выше вершина. Низ остаётся стоять, верх наклоняется и закручивается.
-uniform vec3  b_axis;     // ось поворота головы
-uniform float b_ang;      // полный угол поворота, рад
-uniform float b_y0;       // высота, ниже которой ничего не двигается (точка опоры)
-uniform float b_y1;       // высота, где поворот достигает полного
-uniform float b_curve;    // форма нарастания: >1 — изгиб копится ближе к макушке
-uniform float b_base;     // доля угла ВНИЗУ: 0 — низ памятник, 1 — крутится как голова
-uniform float b_top;      // доля угла НАВЕРХУ: >1 — гнём сильнее головы
-
 in vec3 in_vert;
 in vec3 in_norm;
 in vec2 in_uv;
 out vec3 v_norm;
 out vec2 v_uv;
-
-mat3 axis_angle(vec3 a, float ang) {
-    float c = cos(ang), s = sin(ang), t = 1.0 - c;
-    // mat3 в GLSL собирается ПО СТОЛБЦАМ
-    return mat3(
-        vec3(t*a.x*a.x + c,     t*a.x*a.y + s*a.z, t*a.x*a.z - s*a.y),
-        vec3(t*a.x*a.y - s*a.z, t*a.y*a.y + c,     t*a.y*a.z + s*a.x),
-        vec3(t*a.x*a.z + s*a.y, t*a.y*a.z - s*a.x, t*a.z*a.z + c));
-}
-
 void main() {
-    float h = clamp((in_vert.y - b_y0) / max(b_y1 - b_y0, 1e-6), 0.0, 1.0);
-    // Доля угла растёт от b_base внизу до b_top наверху. Два независимых
-    // числа, а не «сила» на всё сразу: иначе поднять низ нельзя, не утянув верх.
-    float shaped = pow(h, b_curve);
-    float w = b_base + (b_top - b_base) * shaped;
-
-    mat3 Rb = axis_angle(b_axis, b_ang * w);
-    vec3 pivot = vec3(0.0, b_y0, 0.0);
-    vec3 p = pivot + Rb * (in_vert - pivot);
-
-    gl_Position = mvp * vec4(p, 1.0);
-    v_norm = normalize(nrm * (Rb * in_norm));
+    gl_Position = mvp * vec4(in_vert, 1.0);
+    v_norm = normalize(nrm * in_norm);
     v_uv = in_uv;
 }
 """
@@ -138,25 +68,6 @@ def _ortho(w, h, near=-1000.0, far=1000.0):
     m[1, 3] = 1.0
     m[2, 3] = -(far + near) / (far - near)
     return m
-
-
-def _axis_angle(R):
-    """Матрица поворота -> (ось, угол). Нужно, чтобы крутить вершину на ДОЛЮ
-    угла: долю матрицы взять нельзя, а долю угла вокруг той же оси — можно."""
-    c = (np.trace(R) - 1.0) / 2.0
-    ang = float(np.arccos(np.clip(c, -1.0, 1.0)))
-    if ang < 1e-6:
-        return np.array([0.0, 1.0, 0.0], "f4"), 0.0
-    if abs(ang - np.pi) < 1e-4:
-        # Вырожденный случай 180 градусов: кососимметричная часть нулевая.
-        w, V = np.linalg.eigh(R + np.eye(3))
-        ax = V[:, int(np.argmax(w))]
-    else:
-        ax = np.array([R[2, 1] - R[1, 2],
-                       R[0, 2] - R[2, 0],
-                       R[1, 0] - R[0, 1]]) / (2.0 * np.sin(ang))
-    n = np.linalg.norm(ax)
-    return (ax / n).astype("f4"), ang
 
 
 def _rotation(yaw, pitch, roll):
@@ -224,7 +135,7 @@ class Renderer:
         return (np.asarray(pt, "f4") - self._nc) / self._ns
 
     def fit_by_eyes(self, pose, a_model, b_model, a_px, b_px,
-                    signs=(1, 1, 1), margin=1.0, max_size=4000.0, bend=None):
+                    signs=(1, 1, 1), margin=1.0, max_size=4000.0):
         """Подбирает center и size так, чтобы глаза МОДЕЛИ легли на глаза
         человека. Это и есть суть эффекта: настоящие глаза должны попасть в
         глазницы модели, а не жить рядом с ними.
@@ -233,13 +144,11 @@ class Renderer:
         повороте головы межглазное расстояние модели сокращается ровно так же,
         как настоящее, и размер не скачет.
         """
-        b = dict(BEND, **(bend or {}))
-        axis, ang = _axis_angle(_rotation(signs[0] * pose.yaw,
-                                          signs[1] * pose.pitch,
-                                          signs[2] * pose.roll))
-        # Якоря проходят ровно тот же изгиб, что и вершины в шейдере.
-        A = _FLIP_Y @ bend_point(self.normalize(a_model), axis, ang, b)
-        B = _FLIP_Y @ bend_point(self.normalize(b_model), axis, ang, b)
+        R = _FLIP_Y @ _rotation(signs[0] * pose.yaw,
+                                signs[1] * pose.pitch,
+                                signs[2] * pose.roll)
+        A = R @ self.normalize(a_model)
+        B = R @ self.normalize(b_model)
 
         d_model = (A - B)[:2]
         d_real = np.asarray(a_px, "f4") - np.asarray(b_px, "f4")
@@ -252,24 +161,22 @@ class Renderer:
         mid_px = (np.asarray(a_px, "f4") + np.asarray(b_px, "f4")) / 2.0
         return tuple(mid_px - mid_model), size
 
-    def render(self, pose, center, size, flip_yaw=1, flip_pitch=1, flip_roll=1,
-               bend=None):
+    def render(self, pose, center, size, flip_yaw=1, flip_pitch=1, flip_roll=1):
         """Возвращает (rgb HxWx3, alpha HxW) — модель и её силуэт.
 
         center — (x, y) в пикселях, size — размер модели в пикселях.
         Знаки поворотов вынесены наружу: соглашение осей у трекера и у модели
         совпасть само не обязано, подбирается один раз глазами.
         """
-        b = dict(BEND, **(bend or {}))
-        axis, ang = _axis_angle(_rotation(flip_yaw * pose.yaw,
-                                          flip_pitch * pose.pitch,
-                                          flip_roll * pose.roll))
+        R = _rotation(flip_yaw * pose.yaw, flip_pitch * pose.pitch,
+                      flip_roll * pose.roll)
 
-        # Поворот больше НЕ входит в модельную матрицу: его применяет шейдер,
-        # по-вершинно и с весом по высоте. Здесь остаётся только разворот осей
-        # (Y изображения вниз, Y модели вверх), масштаб и перенос.
+        # Y изображения смотрит вниз, Y модели — вверх. Без этого разворота
+        # модель встаёт на голову; раньше это случайно компенсировалось тем,
+        # что OpenGL отдаёт буфер снизу вверх, но положение при этом зеркалилось.
+        RF = _FLIP_Y @ R
         model = np.identity(4, dtype="f4")
-        model[:3, :3] = _FLIP_Y * (size / 2.0)
+        model[:3, :3] = RF * (size / 2.0)
         model[0, 3], model[1, 3] = center
 
         mvp = _ortho(self.w, self.h) @ model
@@ -279,11 +186,7 @@ class Renderer:
         self.tex.use(0)
         self.prog["tex"].value = 0
         self.prog["mvp"].write(np.ascontiguousarray(mvp.T, "f4"))
-        self.prog["nrm"].write(np.ascontiguousarray(_FLIP_Y.T, "f4"))
-        self.prog["b_axis"].value = tuple(float(x) for x in axis)
-        self.prog["b_ang"].value = float(ang)
-        for k in ("y0", "y1", "curve", "base", "top"):
-            self.prog["b_" + k].value = float(b[k])
+        self.prog["nrm"].write(np.ascontiguousarray(RF.T, "f4"))
         self.vao.render()
 
         buf = np.frombuffer(self.fbo.read(components=4), np.uint8)
