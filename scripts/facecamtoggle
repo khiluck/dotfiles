@@ -6,6 +6,15 @@
 # и его можно выбрать камерой в Teams, браузере и где угодно ещё. Окошко-оверлей
 # — это отдельная история, webcamtoggle (Win+q); он сам подхватит facecam, если
 # тот запущен.
+#
+# Но камера у них общая, поэтому переключаться «поверх» открытого окошка нельзя:
+#   * включение поверх окошка на обычной камере — mpv держит /dev/video0, и
+#     facecam не может её открыть;
+#   * выключение под открытым окошком на facecam — /dev/video10 перестаёт
+#     отдавать поток, и окошко остаётся висеть с мёртвой картинкой.
+# Поэтому если окошко открыто, мы его закрываем, переключаем facecam и
+# открываем заново — уже на правильном источнике. Для глаза это выглядит как
+# мгновенное переключение содержимого окошка.
 
 FC=/home/aex/Work/dotfiles/facecam
 FC_MODEL=$FC/models/Watermelon.glb
@@ -22,6 +31,23 @@ FC_PAT="facecam\.py avatar"
 vcam_ready(){
 	v4l2-ctl -d "$VCAM" --all 2>/dev/null \
 		| grep -A2 "Device Caps" | grep -q "Video Capture"
+}
+
+# Окошко-оверлей: закрыть и дождаться, пока камера реально освободится.
+overlay_stop(){
+	pkill -TERM -x mpv
+	rm -f /tmp/webcam && refbar
+	local i
+	for i in $(seq 1 30); do
+		pgrep -x mpv >/dev/null || break
+		sleep 0.2
+	done
+}
+
+# Открыть заново. Флаг уже снят, поэтому webcamtoggle сработает на включение,
+# а источник выберет сам по состоянию /dev/video10.
+overlay_start(){
+	setsid "$(dirname "$0")/webcamtoggle" >/dev/null 2>&1 &
 }
 
 start_facecam(){
@@ -59,7 +85,18 @@ stop_facecam(){
 	# устройства, и /dev/video0 останется занятой.
 	pkill -TERM -f "$FC_PAT"
 	rm -f "$FLAG" && refbar
+	# Ждём фактической смерти: иначе открытое следом окошко увидит /dev/video10
+	# ещё живым и снова сядет на умирающий источник.
+	local i
+	for i in $(seq 1 30); do
+		pgrep -f "$FC_PAT" >/dev/null || break
+		sleep 0.2
+	done
 }
+
+# Если окошко открыто — закрываем на время переключения и открываем обратно.
+reopen=no
+[ -e /tmp/webcam ] && { reopen=yes; overlay_stop; }
 
 # Состояние определяем по живому процессу, а не по флагу: флаг может остаться
 # от упавшего facecam, и тогда включить его было бы уже нельзя.
@@ -68,3 +105,6 @@ if pgrep -f "$FC_PAT" >/dev/null; then
 else
 	start_facecam
 fi
+
+[ "$reopen" = yes ] && overlay_start
+exit 0
