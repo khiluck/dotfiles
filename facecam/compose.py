@@ -45,6 +45,13 @@ DILATE = {"left_eye": 3, "right_eye": 3, "lips": -2}
 # рассинхронизировало бы его с положением на модели.
 ZOOM = {"left_eye": 1.18, "right_eye": 1.18, "lips": 1.0}
 
+# Подтянуть область к середине между глазами, в ДОЛЯХ расстояния глаза->область.
+# 0 — оставить там, где она на лице; 0.25 — поднять рот на четверть пути к глазам.
+# Доли, а не пиксели: иначе сдвиг поехал бы, стоит придвинуться к камере.
+# Нужно потому, что модель сажается по глазам, а рот остаётся на своём месте в
+# кадре: на высокой модели вроде арбуза он оказывается непривычно низко.
+LIFT = {"lips": 0.22}
+
 # Радиус растушёвки края вырезки, px. Осторожно с большими значениями: глаз
 # мал, и ядро размытия, сопоставимое с ним, съедает не только край, но и сам
 # глаз — маска перестаёт доходить до 255, и сквозь глаз просвечивает модель.
@@ -108,7 +115,7 @@ def _morph(mask, d):
 
 
 def real_layer(face, bgr, roi, names=regions.KEEP_REAL,
-               dilate=None, zoom=None, feather=FEATHER):
+               dilate=None, zoom=None, feather=FEATHER, offsets=None):
     """Слой настоящих глаз и рта: (картинка BGR в ROI, маска 0..1 в ROI).
 
     Каждая область обрабатывается в своей маленькой рамке — так и дешевле, и
@@ -116,6 +123,7 @@ def real_layer(face, bgr, roi, names=regions.KEEP_REAL,
     """
     dilate = DILATE if dilate is None else dilate
     zoom = ZOOM if zoom is None else zoom
+    offsets = offsets or {}
     if not isinstance(dilate, dict):
         dilate = {n: int(dilate) for n in names}
 
@@ -129,11 +137,15 @@ def real_layer(face, bgr, roi, names=regions.KEEP_REAL,
         pts = np.vstack(polys)
         d = int(dilate.get(name, 0))
         z = float(zoom.get(name, 1.0))
+        # ВНИМАНИЕ: ниже `off` — это начало рамки, поэтому сдвиг зовём shift.
+        shift = np.asarray(offsets.get(name, (0.0, 0.0)), np.float32)
 
         # Рамка вокруг области с запасом на поджатие/расширение и на увеличение.
         # numpy 2 убрал метод ndarray.ptp() — только функция
         span = max(np.ptp(pts[:, 0]), np.ptp(pts[:, 1]))
-        pad = abs(d) + feather + 3 + int(span * max(z - 1.0, 0.0) / 2) + 2
+        # запас ещё и на сдвиг, иначе смещённая область вылезет за рамку
+        pad = (abs(d) + feather + 3 + int(span * max(z - 1.0, 0.0) / 2) + 2
+               + int(np.abs(shift).max()) + 2)
         bx0 = max(int(pts[:, 0].min()) - pad, 0)
         by0 = max(int(pts[:, 1].min()) - pad, 0)
         bx1 = min(int(pts[:, 0].max()) + pad, W)
@@ -149,9 +161,11 @@ def real_layer(face, bgr, roi, names=regions.KEEP_REAL,
         part = _morph(part, d)
         img = bgr[by0:by1, bx0:bx1]
 
-        if abs(z - 1.0) > 1e-3:
-            c = pts.mean(0) - off
+        if abs(z - 1.0) > 1e-3 or np.abs(shift).max() > 0.5:
+            c = pts.mean(0) - np.array([bx0, by0], np.float32)
             M = cv2.getRotationMatrix2D((float(c[0]), float(c[1])), 0.0, z)
+            M[0, 2] += shift[0]
+            M[1, 2] += shift[1]
             part = cv2.warpAffine(part, M, (bw, bh), flags=cv2.INTER_NEAREST)
             img = cv2.warpAffine(img, M, (bw, bh), flags=cv2.INTER_LINEAR)
 
@@ -205,7 +219,7 @@ def _roi(bgr, face, center, size, aspect, pad):
 
 
 def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
-            margin=None, dy=0.0, dx=0.0,
+            margin=None, dy=0.0, dx=0.0, lift=None,
             dilate=None, zoom=None, feather=FEATHER, signs=(1, 1, 1)):
     """Собирает итоговый кадр из трёх слоёв.
 
@@ -230,6 +244,16 @@ def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
         return bgr if base is None else base
     center = (center[0] + dx * size, center[1] + dy * size)
 
+    # Сдвиг областей к середине между глазами (см. LIFT). Считается в долях
+    # расстояния глаза->область, поэтому не зависит от того, близко ли ты к
+    # камере.
+    eye_mid = (np.asarray(a_px, "f4") + np.asarray(b_px, "f4")) / 2.0
+    offsets = {}
+    for nm, frac in (LIFT if lift is None else lift).items():
+        if frac:
+            c = np.vstack(face.polygons([nm])).mean(0)
+            offsets[nm] = (eye_mid - c) * float(frac)
+
     rgb, alpha = renderer.render(face.pose, center, size, *signs)
 
     # Всё смешивание — только внутри ROI. Полнокадровая арифметика в float32
@@ -239,7 +263,8 @@ def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
     dmax = max((dilate or DILATE).values()) if isinstance(dilate or DILATE, dict) \
         else int(dilate or 0)
     zmax = max((zoom or ZOOM).values())
-    pad = feather + 4 + abs(dmax) + int(40 * max(zmax - 1.0, 0.0))
+    smax = max((abs(v).max() for v in offsets.values()), default=0.0)
+    pad = feather + 4 + abs(dmax) + int(40 * max(zmax - 1.0, 0.0)) + int(smax) + 2
     x0, y0, x1, y1 = _roi(bgr, face, center, size, renderer.aspect, pad)
 
     out = bgr.copy() if base is None else base
@@ -247,7 +272,8 @@ def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
     model = cv2.cvtColor(rgb[y0:y1, x0:x1], cv2.COLOR_RGB2BGR)
 
     real, m8 = real_layer(face, bgr, (x0, y0, x1, y1),
-                          dilate=dilate, zoom=zoom, feather=feather)
+                          dilate=dilate, zoom=zoom, feather=feather,
+                          offsets=offsets)
 
     a = (alpha[y0:y1, x0:x1].astype(np.float32) / 255.0)[:, :, None]
     m = (m8.astype(np.float32) / 255.0)[:, :, None]

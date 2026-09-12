@@ -61,6 +61,9 @@ def main():
                          "(по умолчанию из compose.FEATHER)")
     ap.add_argument("--zoom-eyes", type=float, default=None,
                     help="увеличение вырезки глаз относительно их центра")
+    ap.add_argument("--lift-lips", type=float, default=None,
+                    help="поднять рот к глазам, в долях расстояния глаза-рот "
+                         "(0 — оставить на месте, 0.25 — на четверть пути)")
     ap.add_argument("--background", default="real",
                     help="real | blur[:N] | R,G,B | #rrggbb | путь к картинке")
     ap.add_argument("--bg-blur", type=int, default=0,
@@ -100,6 +103,11 @@ def main():
         zoom = dict(ZOOM)
         if a.zoom_eyes is not None:
             zoom["left_eye"] = zoom["right_eye"] = a.zoom_eyes
+
+        from compose import LIFT
+        lift = dict(LIFT)
+        if a.lift_lips is not None:
+            lift["lips"] = a.lift_lips
         if a.dilate_eyes is not None:
             dilate["left_eye"] = dilate["right_eye"] = a.dilate_eyes
         if a.dilate_lips is not None:
@@ -132,7 +140,7 @@ def main():
                                                else bg(bgr),
                                           clip=not a.no_clip,
                                           margin=a.margin, dilate=dilate,
-                                          zoom=zoom,
+                                          zoom=zoom, lift=lift,
                                           **({} if a.feather is None
                                              else {'feather': a.feather}))
                         else:
