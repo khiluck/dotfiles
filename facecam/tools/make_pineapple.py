@@ -79,7 +79,7 @@ def _cell_hash(a, b):
     return ((h ^ (h >> 16)) & 0xFFFF) / 65535.0
 
 
-def texture(size=1024, crown=128, sharp=0.9):
+def texture(size=1024, crown=128, sharp=0.9, bright=1.0):
     """Текстура тела + полоса для листьев хохолка.
 
     Рисуется ПО ТОЙ ЖЕ формуле, что и рельеф, поэтому тёмные «глазки» садятся
@@ -105,13 +105,14 @@ def texture(size=1024, crown=128, sharp=0.9):
 
     # Базовый цвет: снизу теплее и краснее, к макушке желтее и зеленее —
     # как у настоящего, он дозревает снизу вверх.
-    low = np.array([0.68, 0.45, 0.14])
-    high = np.array([0.92, 0.76, 0.26])
+    low = np.array([0.68, 0.45, 0.14]) * bright
+    high = np.array([0.92, 0.76, 0.26]) * bright
     base = low + (high - low) * T[..., None]
 
     # Гребень чешуйки светлее, желобок темнее.
     crest = np.clip(base * 1.25 + 0.10, 0, 1)
-    groove = base * 0.62
+    # Дно желобка: чем выше, тем меньше «грязи» в общем тоне.
+    groove = base * (0.62 + 0.14 * (bright - 1.0) / 0.25)
     col = groove + (crest - groove) * s[..., None]
 
     # Каждая чешуйка чуть своего оттенка.
@@ -293,10 +294,10 @@ RINGS = [
 
 
 def build(nu=160, nv=120, amp=0.065, sharp=1.7, tex_sharp=0.9,
-          size=1024, crown_rows=128,
+          size=1024, crown_rows=128, bright=1.0,
           crown_scale=1.0, seed=11, with_crown=True):
     """Тело + хохолок + текстура, с развёрткой, ужатой под полосу листьев."""
-    tex, body_frac = texture(size, crown_rows, tex_sharp)
+    tex, body_frac = texture(size, crown_rows, tex_sharp, bright)
     v, f, n, uv = body(nu, nv, amp, sharp=sharp)
     uv = uv.copy()
     # Рендер переворачивает v (renderer.py: uv[:,1] = 1 - uv[:,1]), поэтому
@@ -325,6 +326,8 @@ def main():
     ap.add_argument("--sharp", type=float, default=1.7, help="заострение чешуек")
     ap.add_argument("--tex-sharp", type=float, default=0.9,
                     help="ширина светлой грани чешуйки на текстуре")
+    ap.add_argument("--bright", type=float, default=1.2,
+                    help="яркость кожуры: >1 светлее и золотистее")
     ap.add_argument("--nu", type=int, default=160)
     ap.add_argument("--nv", type=int, default=120)
     ap.add_argument("--crown-scale", type=float, default=1.0)
@@ -339,6 +342,7 @@ def main():
     a = ap.parse_args()
 
     v, f, n, uv, tex, frac = build(a.nu, a.nv, a.amp, a.sharp, a.tex_sharp,
+                                   bright=a.bright,
                                    crown_scale=a.crown_scale, seed=a.seed)
     # Центруем: рендер нормирует по высоте, а якоря пишем уже в этих координатах.
     v = v - (v.max(0) + v.min(0)) / 2.0
