@@ -12,5 +12,6 @@
     0.81
   ],
   "found_by": "жёлтые вершины базовой текстуры (240,224,144), tools/find_anchors.py",
-  "margin": 1.0
+  "margin": 1.0,
+  "lift_lips": 0.0
 }

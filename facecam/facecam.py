@@ -104,10 +104,8 @@ def main():
         if a.zoom_eyes is not None:
             zoom["left_eye"] = zoom["right_eye"] = a.zoom_eyes
 
-        from compose import LIFT
-        lift = dict(LIFT)
-        if a.lift_lips is not None:
-            lift["lips"] = a.lift_lips
+        # По умолчанию берём из якорей модели; ключ только для подбора.
+        lift = None if a.lift_lips is None else {"lips": a.lift_lips}
         if a.dilate_eyes is not None:
             dilate["left_eye"] = dilate["right_eye"] = a.dilate_eyes
         if a.dilate_lips is not None:

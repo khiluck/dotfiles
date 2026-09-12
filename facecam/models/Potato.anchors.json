@@ -12,5 +12,6 @@
     0.7375
   ],
   "margin": 1.35,
-  "found_by": "make_potato.py --axes 0.75,1.0,0.80 --amp 0.06 --seed 3 --eye-dx 0.3 --eye-y 0.17"
+  "found_by": "make_potato.py --axes 0.75,1.0,0.80 --amp 0.06 --seed 3 --eye-dx 0.3 --eye-y 0.17",
+  "lift_lips": 0.22
 }

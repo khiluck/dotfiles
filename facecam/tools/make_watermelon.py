@@ -77,8 +77,11 @@ def main():
     ap.add_argument("--stem-bend", type=float, default=0.06)
     ap.add_argument("--no-stem", action="store_true")
     ap.add_argument("--eye-dx", type=float, default=0.26)
-    ap.add_argument("--eye-y", type=float, default=0.12)
+    ap.add_argument("--eye-y", type=float, default=0.42,
+                    help="высота глаз на модели. Выше -> модель садится\n                          ниже, и лицо оказывается в верхней части арбуза")
     ap.add_argument("--margin", type=float, default=1.3)
+    ap.add_argument("--lift-lips", type=float, default=0.62,
+                    help="подъём рта к глазам, в долях расстояния глаза-рот")
     a = ap.parse_args()
 
     m = trimesh.load(a.src, force="mesh")
@@ -134,8 +137,9 @@ def main():
                "eye_x_pos": [round(float(x), 4) for x in ep],
                "eye_x_neg": [round(float(x), 4) for x in en],
                "margin": a.margin,
+               "lift_lips": a.lift_lips,
                "found_by": f"make_watermelon.py --eye-dx {a.eye_dx} "
-                           f"--eye-y {a.eye_y}"},
+                           f"--eye-y {a.eye_y} --lift-lips {a.lift_lips}"},
               open(p, "w"), indent=2, ensure_ascii=False)
     print(f"{p}: глаза {np.round(ep,3)} и {np.round(en,3)}")
 

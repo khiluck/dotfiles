@@ -9,6 +9,7 @@
 попадать не должны — на этом держится весь смысл режима.
 """
 import json
+from collections import namedtuple
 
 import cv2
 import numpy as np
@@ -63,16 +64,19 @@ LIFT = {"lips": 0.22}
 FEATHER = 4
 
 
-def load_anchors(path):
-    """Точки привязки модели плюс её собственный масштаб по умолчанию.
+# Всё, что зависит от конкретной модели, живёт в её .anchors.json, а не в ключах
+# запуска: помнить руками, что арбузу нужен один масштаб и подъём рта, а
+# Suzanne другой, бессмысленно.
+Anchors = namedtuple("Anchors", "a b margin lift")
 
-    margin держим здесь, а не в ключах запуска: каждой модели нужен свой
-    (картошке ~1.6, Suzanne 1.0), и помнить это руками бессмысленно.
-    """
+
+def load_anchors(path):
+    """Точки привязки модели плюс её собственные масштаб и подъём рта."""
     d = json.load(open(path))
-    return (np.array(d["eye_x_pos"], "f4"),
-            np.array(d["eye_x_neg"], "f4"),
-            float(d.get("margin", 1.0)))
+    return Anchors(np.array(d["eye_x_pos"], "f4"),
+                   np.array(d["eye_x_neg"], "f4"),
+                   float(d.get("margin", 1.0)),
+                   float(d.get("lift_lips", LIFT.get("lips", 0.0))))
 
 
 def eye_centers(face):
@@ -232,12 +236,11 @@ def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
     clip=True обрезает вырезку силуэтом модели: без этого рот, не попавший на
     модель, повисает прямо на фоне сам по себе.
     """
-    a_model, b_model, _ = anchors
     a_px, b_px = eye_centers(face)
 
-    center, size = renderer.fit_by_eyes(face.pose, a_model, b_model, a_px, b_px,
-                                        signs,
-                                        anchors[2] if margin is None else margin)
+    center, size = renderer.fit_by_eyes(face.pose, anchors.a, anchors.b,
+                                        a_px, b_px, signs,
+                                        anchors.margin if margin is None else margin)
     if center is None:
         # Голова почти в профиль, якоря слиплись. Отдаём фон, а НЕ настоящий
         # кадр: иначе при повороте головы в эфир уходит живое лицо.
@@ -249,7 +252,7 @@ def compose(bgr, face, renderer, anchors, *, base=None, clip=True,
     # камере.
     eye_mid = (np.asarray(a_px, "f4") + np.asarray(b_px, "f4")) / 2.0
     offsets = {}
-    for nm, frac in (LIFT if lift is None else lift).items():
+    for nm, frac in ({"lips": anchors.lift} if lift is None else lift).items():
         if frac:
             c = np.vstack(face.polygons([nm])).mean(0)
             offsets[nm] = (eye_mid - c) * float(frac)
