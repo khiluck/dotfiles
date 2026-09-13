@@ -1,0 +1,64 @@
+#!/bin/bash
+# Сторож туннеля WireGuard: поднимает канал после провалов Wi-Fi.
+# Сначала пробует сбросить endpoint (дёшево, маршруты остаются),
+# и только если не помогло - перезапускает wg-quick.
+set -u
+
+IFACE="${IFACE:-wg-client0}"
+UNIT="wg-quick@${IFACE}.service"
+CONF="/etc/wireguard/${IFACE}.conf"
+PEER_IP="${PEER_IP:-10.100.10.1}"
+INTERVAL="${INTERVAL:-10}"   # пауза между проверками, сек
+FAILS="${FAILS:-2}"          # провалов подряд до вмешательства
+COOLDOWN_MIN=30
+COOLDOWN_MAX=300
+
+# режем только по первому '=', иначе теряется хвостовой '=' base64-ключа
+peer_key() { awk '/^[[:space:]]*PublicKey[[:space:]]*=/{sub(/^[^=]*=[[:space:]]*/, ""); print; exit}' "$CONF"; }
+endpoint() { awk '/^[[:space:]]*Endpoint[[:space:]]*=/{sub(/^[^=]*=[[:space:]]*/, ""); print; exit}' "$CONF"; }
+
+# есть ли дефолтный маршрут мимо самого туннеля (т.е. физический линк жив)
+uplink_up() { ip route show default | grep -qv " dev ${IFACE}"; }
+
+tunnel_ok() { ping -c"${1:-1}" -W2 -n -q "$PEER_IP" &>/dev/null; }
+
+fail=0
+cooldown=$COOLDOWN_MIN
+
+while :; do
+	sleep "$INTERVAL"
+
+	systemctl is-active --quiet "$UNIT" || { fail=0; continue; }  # выключен вручную - не лезем
+	uplink_up || { fail=0; continue; }                            # нет линка - ждать, не дёргать
+
+	if tunnel_ok; then
+		fail=0; cooldown=$COOLDOWN_MIN; continue
+	fi
+
+	fail=$((fail + 1))
+	[ "$fail" -ge "$FAILS" ] || continue
+
+	key=$(peer_key); ep=$(endpoint)
+	echo "туннель молчит, сбрасываю endpoint ($ep)"
+	if [ -n "$key" ] && [ -n "$ep" ] && wg set "$IFACE" peer "$key" endpoint "$ep" 2>/dev/null; then
+		sleep 2
+		if tunnel_ok 3; then
+			echo "поднялся без рестарта"
+			fail=0; cooldown=$COOLDOWN_MIN; continue
+		fi
+	fi
+
+	echo "не помогло, перезапускаю $UNIT"
+	systemctl restart "$UNIT"
+	sleep 3
+	if tunnel_ok 3; then
+		echo "туннель восстановлен"
+		cooldown=$COOLDOWN_MIN
+	else
+		echo "канала всё ещё нет, пауза ${cooldown}s"
+		sleep "$cooldown"
+		[ "$cooldown" -lt "$COOLDOWN_MAX" ] && cooldown=$((cooldown * 2))
+		[ "$cooldown" -gt "$COOLDOWN_MAX" ] && cooldown=$COOLDOWN_MAX
+	fi
+	fail=0
+done

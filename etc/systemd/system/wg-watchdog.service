@@ -1,0 +1,16 @@
+[Unit]
+Description=Watchdog for WireGuard tunnel wg-client0
+After=network.target wg-quick@wg-client0.service
+Wants=wg-quick@wg-client0.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/wg-watchdog
+Restart=always
+RestartSec=5
+Nice=10
+NoNewPrivileges=yes
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
