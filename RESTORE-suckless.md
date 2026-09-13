@@ -177,6 +177,182 @@ wpctl set-default "$(wpctl status | awk '/Sources:/{f=1} f&&/Noise Canceling/{pr
 `screencast` пишет микрофон через этот источник (default), поэтому свой шумодав
 (afftdn) в скрипте убран — RNNoise делает это лучше и до ffmpeg.
 
+## WireGuard дома: туннель, переживающий роуминг Wi-Fi
+
+На ноуте постоянно поднят `wg-quick@wg-client0` — весь трафик идёт через сервер.
+Дома (две точки доступа, RSSI ~−72 дБм на 5 ГГц) `iwd` регулярно роумится между
+ними, и после каждого роуминга туннель умирал навсегда, до ручного
+`systemctl restart wg-quick@wg-client0`.
+
+Причина не в провайдере и не в `PersistentKeepalive`. Роуминг — это потеря
+carrier на 1–2 секунды, а `systemd-networkd` по умолчанию
+(`IgnoreCarrierLoss=no`) на любую потерю carrier **сносит адрес и маршруты** и
+переполучает DHCP. WireGuard остаётся с протухшим кэшем исходящего адреса и
+больше не отправляет ни одного пакета. `PersistentKeepalive` тут бессилен: он
+держит открытым NAT, но не чинит оборванный сокет. В журнале это выглядит так:
+
+```
+iwd: event: state, old: connected, new: roaming
+wlan0: Lost carrier / Gained carrier
+wlan0: DHCPv4 address 192.168.2.100 acquired    ← конфигурация переполучена заново
+```
+
+**Лечение** — одна строка в секции `[Network]` файла
+`etc/systemd/network/20-wlan.network`:
+
+```ini
+IgnoreCarrierLoss=10s
+```
+
+Блики короче 10 секунд больше не приводят к сносу конфигурации, и туннель
+переживает роуминг вообще без вмешательства.
+
+**Страховка** на случай настоящих обрывов (провайдер, сон/пробуждение) —
+`scripts/wg-watchdog` + `etc/systemd/system/wg-watchdog.service`.
+
+Разворачивание всего узла с нуля, из корня репозитория:
+
+```sh
+sudo pacman -S --needed wireguard-tools nftables
+sudo install -m600 etc/wireguard/wg-client0.conf.example /etc/wireguard/wg-client0.conf
+sudo vim /etc/wireguard/wg-client0.conf          # вписать PrivateKey, в репозиторий он не попадает
+sudo systemctl enable --now wg-quick@wg-client0
+
+sudo install -m644 etc/nftables.conf /etc/nftables.conf
+sudo systemctl enable --now nftables
+
+sudo cp etc/systemd/network/20-wlan.network /etc/systemd/network/
+sudo networkctl reload
+sudo install -m755 scripts/wg-watchdog /usr/local/bin/wg-watchdog
+sudo cp etc/systemd/system/wg-watchdog.service /etc/systemd/system/
+sudo systemctl enable --now wg-watchdog.service
+```
+
+Сторож пингует `10.100.10.1` раз в 10 секунд; на двух провалах подряд сначала
+пробует дешёвый `wg set … endpoint` (маршруты и DNS не трогаются) и только потом
+перезапускает `wg-quick`. Дальше — backoff 30 → 300 с, чтобы при реальном обрыве
+у провайдера не долбить рестартами. Ничего не делает, если юнит остановлен
+вручную или физического дефолтного маршрута нет вообще.
+
+Две ловушки, на которые легко напороться при правке:
+
+- `IgnoreCarrierLoss=` живёт в секции `[Network]`. Если дописать строку в конец
+  файла, она попадёт в `[DHCPv4]` и networkd молча её проигнорирует —
+  `journalctl -u systemd-networkd | grep "Unknown key"`.
+- Ключ пира в base64 заканчивается на `=`, поэтому разбирать конфиг через
+  `awk -F=` нельзя — хвостовой символ отрезается. Режем только по первому `=`:
+  `awk '/^[[:space:]]*PublicKey[[:space:]]*=/{sub(/^[^=]*=[[:space:]]*/, ""); print; exit}'`.
+
+Проверка сторожа — блокировкой endpoint, а не подменой его через `wg set`:
+сервер сам шлёт пакеты и возвращает endpoint обратно, подмена не держится.
+
+```sh
+sudo iptables -I OUTPUT -d 5.44.252.67 -p udp --dport 55830 -j DROP
+journalctl -u wg-watchdog -f      # ~20 c: сброс endpoint, затем рестарт, затем пауза 30 с
+sudo iptables -D OUTPUT -d 5.44.252.67 -p udp --dport 55830 -j DROP
+```
+
+Что роуминг больше не рвёт конфигурацию, видно по отсутствию строки
+`DHCPv4 address … acquired` после `Gained carrier`:
+`journalctl -u systemd-networkd -u iwd | grep -E "roam|carrier|acquired"`.
+
+### Конфиг туннеля
+
+`etc/wireguard/wg-client0.conf.example` → `/etc/wireguard/wg-client0.conf`
+(`chmod 600`, приватный ключ в репозиторий не кладётся):
+
+```ini
+[Interface]
+PrivateKey = <приватный ключ клиента>
+Address = 10.100.10.50/24
+DNS = 10.100.10.1
+
+[Peer]
+PublicKey = 7bN0QHcm4Y1fisiWatei1NNM/QuzNKXZFHJHePQ2mG0=
+Endpoint = 5.44.252.67:55830
+AllowedIPs = 0.0.0.0/0
+PersistentKeepalive = 20
+```
+
+`AllowedIPs = 0.0.0.0/0` — весь трафик в туннель. `wg-quick` реализует это не
+заменой дефолтного маршрута, а политикой маршрутизации: помечает свои пакеты
+fwmark и добавляет правила `not from all fwmark 0xca6c lookup 51820` и
+`suppress_prefixlength 0`. Поэтому в `ip route` дефолт остаётся через Wi-Fi, а
+весь трафик всё равно уходит в `wg-client0` — смотреть надо `ip rule` и
+`ip route show table 51820`.
+
+`DNS = 10.100.10.1` прописывается через `resolvconf`, который на этой машине —
+шим к `systemd-resolved`. Проверка, что резолвинг ушёл в туннель, а не к роутеру:
+`resolvectl status` → у `wg-client0` должно быть `DNS Domain: ~.` и
+`Default Route: yes`.
+
+`PersistentKeepalive = 20` держит открытым NAT на стороне провайдера. Он **не**
+чинит оборванный сокет — именно поэтому нужны `IgnoreCarrierLoss` и сторож выше.
+
+### Killswitch на nftables
+
+`etc/nftables.conf` → `/etc/nftables.conf`, включается
+`sudo systemctl enable --now nftables`. Суть — в цепочке `output` политика `drop`
+и выпускается наружу только то, без чего туннель не поднимется:
+
+```nft
+define wg_if = "wg-client0"
+define wg_endpoint = 5.44.252.67
+define wg_port = 55830
+
+  chain output {
+    type filter hook output priority filter
+    policy drop
+
+    ct state invalid drop
+    ct state {established, related} accept
+    oifname lo accept
+    fib daddr type local accept comment "allow local addresses"
+
+    # единственная дырка наружу: сам WireGuard к своему серверу
+    ip daddr $wg_endpoint udp dport $wg_port accept comment "allow wireguard endpoint"
+    udp sport 68 udp dport 67 accept comment "allow dhcp requests"
+
+    ip daddr 192.168.10.0/24 accept comment "allow LAN"
+
+    oifname $wg_if accept comment "allow traffic through WireGuard"
+    counter reject with icmpx type admin-prohibited comment "killswitch: block non-WireGuard output"
+  }
+```
+
+Пока туннель жив — всё уходит через него; как только он падает, последнее
+правило режет весь остальной исходящий трафик, и утечки мимо VPN не случается.
+`reject` вместо `drop` выбран сознательно: приложения получают отказ сразу, а не
+висят до таймаута.
+
+Чего тут легко не заметить:
+
+- Дырка наружу прибита к **конкретному IP и порту** (`define wg_endpoint`).
+  Сменился сервер — правь `define` и перезагружай ruleset, иначе туннель не
+  поднимется вообще, а выглядеть будет как «опять интернет пропал».
+- Домашняя подсеть `192.168.2.0/24` в killswitch **не** открыта (открыта рабочая
+  `192.168.10.0/24` и пара отдельных адресов). Поэтому роутер `192.168.2.1` с
+  ноута не пингуется — это норма, а не поломка. Именно из-за этого `wg-watchdog`
+  проверяет наличие физического линка по таблице маршрутов, а не пингом шлюза:
+  пинг шлюза killswitch зарежет, и сторож решит, что линка нет.
+- `nftables.service` — `Type=oneshot`, поэтому после успешной загрузки правил он
+  показывает `inactive (dead)`. Это нормально; смотреть надо
+  `sudo nft list ruleset`, а не `systemctl is-active`.
+- Правила `ct state {established, related} accept` означают, что уже открытые
+  соединения переживут падение туннеля. Полная герметичность — убрать `related`
+  и явно ограничить `established` интерфейсом, но тогда ломается больше, чем
+  защищается.
+
+Проверка killswitch: при остановленном туннеле наружу не должно уходить ничего,
+а счётчик последнего правила — расти.
+
+```sh
+sudo systemctl stop wg-quick@wg-client0
+ping -c1 -W2 1.1.1.1                                    # From 192.168.2.100 icmp_seq=1 Packet filtered
+sudo nft list chain inet filter output | grep killswitch # counter packets N ... - N растёт
+sudo systemctl start wg-quick@wg-client0
+```
+
 ## Проверка, что получилось то же самое
 
 ```sh

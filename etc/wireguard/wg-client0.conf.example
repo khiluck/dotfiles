@@ -1,0 +1,13 @@
+# /etc/wireguard/wg-client0.conf
+# Весь трафик уходит через сервер. Приватный ключ в репозиторий не попадает.
+
+[Interface]
+PrivateKey = <приватный ключ клиента>
+Address = 10.100.10.50/24
+DNS = 10.100.10.1
+
+[Peer]
+PublicKey = 7bN0QHcm4Y1fisiWatei1NNM/QuzNKXZFHJHePQ2mG0=
+Endpoint = 5.44.252.67:55830
+AllowedIPs = 0.0.0.0/0
+PersistentKeepalive = 20
